@@ -29,13 +29,16 @@ contract EthWord {
             "Only the recipient can close the channel"
         );
         bytes32 wordScratch = _word;
-        for (uint i = 1; i <= _wordCount; i++) {
+        for (uint i = 1; i < _wordCount; i++) {
             wordScratch = keccak256(abi.encodePacked(wordScratch));
         }
         require(wordScratch == channelTip, "Incorrect word or word count");
 
         uint amountToWithdraw = calculateWithdrawAmount(_wordCount);
         channelRecipient.transfer(amountToWithdraw);
+        // TODO
+        // transfer the remaining ammount to sender
+        // channelSender
     }
 
     function calculateWithdrawAmount(

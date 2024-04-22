@@ -34,9 +34,9 @@ describe("EthWord", function () {
     const [owner, otherAccount] = await hre.viem.getWalletClients();
 
     const defaultRecipient: `0x${string}` = otherAccount.account.address;
-    const hashChain = createHashchain("secret", 11);
-    const tip = hashChain[10];
-    console.log(hashChain);
+
+    const hashChain = createHashchain("secret", 10);
+    const tip = hashChain[9];
     const wordCount = BigInt(10);
 
     const ethWord = await hre.viem.deployContract(
@@ -73,7 +73,7 @@ describe("EthWord", function () {
         deployOneYearLockFixture
       );
 
-      expect(await ethWord.read.channelTip()).to.equal(hashChain[10]);
+      expect(await ethWord.read.channelTip()).to.equal(hashChain[9]);
     });
   });
 
