@@ -35,7 +35,9 @@ contract EthWord {
         require(wordScratch == channelTip, "Incorrect word or word count");
 
         uint amountToWithdraw = calculateWithdrawAmount(_wordCount);
-        channelRecipient.transfer(amountToWithdraw);
+
+        (bool sent, ) = channelRecipient.call{value: amountToWithdraw}("");
+        require(sent, "Failed to send Ether");
         // TODO
         // transfer the remaining ammount to sender
         // channelSender
