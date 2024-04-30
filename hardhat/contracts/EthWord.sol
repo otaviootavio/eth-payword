@@ -31,12 +31,10 @@ contract EthWord {
         validateChannelClosure(_word, _wordCount);
 
         uint amountToWithdraw = calculateWithdrawAmount(_wordCount);
-
         (bool sent, ) = channelRecipient.call{value: amountToWithdraw}("");
+        channelTip = _word;
+        totalWordCount = _wordCount;
         require(sent, "Failed to send Ether");
-        // TODO
-        // transfer the remaining amount to sender
-        // channelSender
     }
 
     function simulateCloseChannel(
