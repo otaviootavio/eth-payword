@@ -91,7 +91,7 @@ describe("EthWord", function () {
   });
 
   describe("Channel", function () {
-    it("Should close the channel correctely", async function () {
+    it("Should close the channel after send h0 and change balance to 0", async function () {
       const { ethWord, chainSize, otherAccount, publicClient, hashChain } =
         await loadFixture(deployEthWord);
 
@@ -105,7 +105,7 @@ describe("EthWord", function () {
       ).to.equal(0n);
     });
 
-    it("Should send one of n hash", async function () {
+    it("Should send one of n hash and change its balance", async function () {
       const {
         ethWord,
         chainSize,
@@ -125,7 +125,7 @@ describe("EthWord", function () {
       ).to.equal(ammount - ammount / BigInt(chainSize));
     });
 
-    it("Should send m of n hash", async function () {
+    it("Should send m of n hash and change its balance", async function () {
       const {
         ethWord,
         chainSize,
@@ -149,7 +149,7 @@ describe("EthWord", function () {
   });
 
   describe("User", function () {
-    it("Should receive the full channel", async function () {
+    it("Should receive the full channel balance", async function () {
       const {
         ethWord,
         chainSize,
@@ -186,7 +186,7 @@ describe("EthWord", function () {
       );
     });
 
-    it("Should receive one hash of the channel", async function () {
+    it("Should receive one hash of the channel balance", async function () {
       const {
         ethWord,
         chainSize,
@@ -225,7 +225,7 @@ describe("EthWord", function () {
       );
     });
 
-    it("Should receive M hash of the channel", async function () {
+    it("Should receive M hash of the channel balance", async function () {
       const {
         ethWord,
         chainSize,
