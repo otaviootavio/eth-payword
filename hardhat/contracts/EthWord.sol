@@ -33,7 +33,7 @@ contract EthWord {
         uint amountToWithdraw = calculateWithdrawAmount(_wordCount);
         (bool sent, ) = channelRecipient.call{value: amountToWithdraw}("");
         channelTip = _word;
-        totalWordCount = _wordCount;
+        totalWordCount = totalWordCount - _wordCount;
         require(sent, "Failed to send Ether");
     }
 
