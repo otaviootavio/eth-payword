@@ -19,7 +19,7 @@ function createHashchain(secret: Uint8Array, length: number): Uint8Array[] {
 }
 
 describe("EthWord", function () {
-  async function deployOneYearLockFixture() {
+  async function deployEthWord() {
     const chainSize: number = 10;
     const secret: Uint8Array = stringToBytes("segredo");
     const ammount: bigint = parseEther("3000");
@@ -56,16 +56,14 @@ describe("EthWord", function () {
 
   describe("Deployment", function () {
     it("Should deploy it correctely the word count", async function () {
-      const { ethWord, chainSize } = await loadFixture(
-        deployOneYearLockFixture
-      );
+      const { ethWord, chainSize } = await loadFixture(deployEthWord);
 
       expect(await ethWord.read.totalWordCount()).to.equal(BigInt(chainSize));
     });
 
     it("Should deploy it correctely the word tip", async function () {
       const { ethWord, hashChain, chainSize } = await loadFixture(
-        deployOneYearLockFixture
+        deployEthWord
       );
 
       expect(await ethWord.read.channelTip()).to.equal(
@@ -75,7 +73,7 @@ describe("EthWord", function () {
 
     it("Should deploy it correctely the balance", async function () {
       const { publicClient, ethWord, ammount } = await loadFixture(
-        deployOneYearLockFixture
+        deployEthWord
       );
 
       expect(
@@ -84,9 +82,7 @@ describe("EthWord", function () {
     });
 
     it("Should deploy it correctely the receipient", async function () {
-      const { ethWord, otherAccount } = await loadFixture(
-        deployOneYearLockFixture
-      );
+      const { ethWord, otherAccount } = await loadFixture(deployEthWord);
 
       expect(
         (await ethWord.read.channelRecipient()).toLocaleLowerCase()
@@ -97,7 +93,7 @@ describe("EthWord", function () {
   describe("Channel", function () {
     it("Should close the channel correctely", async function () {
       const { ethWord, chainSize, otherAccount, publicClient, hashChain } =
-        await loadFixture(deployOneYearLockFixture);
+        await loadFixture(deployEthWord);
 
       await ethWord.write.closeChannel(
         [bytesToHex(hashChain[0], { size: 32 }), BigInt(chainSize)],
@@ -117,7 +113,7 @@ describe("EthWord", function () {
         publicClient,
         hashChain,
         ammount,
-      } = await loadFixture(deployOneYearLockFixture);
+      } = await loadFixture(deployEthWord);
 
       await ethWord.write.closeChannel(
         [bytesToHex(hashChain[chainSize - 1], { size: 32 }), BigInt(1)],
@@ -137,7 +133,7 @@ describe("EthWord", function () {
         publicClient,
         hashChain,
         ammount,
-      } = await loadFixture(deployOneYearLockFixture);
+      } = await loadFixture(deployEthWord);
 
       const M = 8;
 
@@ -161,7 +157,7 @@ describe("EthWord", function () {
         publicClient,
         hashChain,
         ammount,
-      } = await loadFixture(deployOneYearLockFixture);
+      } = await loadFixture(deployEthWord);
 
       const initialOtherBalance = await publicClient.getBalance({
         address: otherAccount.account.address,
@@ -198,7 +194,7 @@ describe("EthWord", function () {
         publicClient,
         hashChain,
         ammount,
-      } = await loadFixture(deployOneYearLockFixture);
+      } = await loadFixture(deployEthWord);
 
       const initialOtherBalance = await publicClient.getBalance({
         address: otherAccount.account.address,
@@ -237,7 +233,7 @@ describe("EthWord", function () {
         publicClient,
         hashChain,
         ammount,
-      } = await loadFixture(deployOneYearLockFixture);
+      } = await loadFixture(deployEthWord);
 
       const M = 4;
 
