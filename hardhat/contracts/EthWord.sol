@@ -28,13 +28,20 @@ contract EthWord {
             msg.sender == channelRecipient,
             "Only the recipient can close the channel"
         );
-        validateChannelClosure(_word, _wordCount);
+        require(
+            _wordCount <= totalWordCount,
+            "Word count exceeds available words"
+        );
+        bool isValid = validateChannelClosure(_word, _wordCount);
+        require(isValid, "Word or WordCount not valid!");
 
         uint amountToWithdraw = calculateWithdrawAmount(_wordCount);
+
         (bool sent, ) = channelRecipient.call{value: amountToWithdraw}("");
+        require(sent, "Failed to send Ether");
+
         channelTip = _word;
         totalWordCount = totalWordCount - _wordCount;
-        require(sent, "Failed to send Ether");
     }
 
     function simulateCloseChannel(
@@ -62,7 +69,11 @@ contract EthWord {
         bytes32 _word,
         uint _wordCount
     ) private view returns (bool) {
-        bytes32 wordScratch = _word;
+        if (_wordCount == 0) {
+            return false;
+        }
+        bytes32 wordScratch = keccak256(abi.encodePacked(_word));
+
         for (uint i = 1; i < _wordCount; i++) {
             wordScratch = keccak256(abi.encodePacked(wordScratch));
         }

@@ -6,6 +6,7 @@ import {
   useWriteEthWordCloseChannel,
 } from "../../generated";
 import { useAccount } from "wagmi";
+import { formatEther } from "viem";
 
 export function CloseChannel() {
   const address = import.meta.env.VITE_CONTRACT_ADDRESS;
@@ -52,7 +53,8 @@ export function CloseChannel() {
     <div>
       <p>{statusEth}</p>
       <p>{errorEth?.message}</p>
-      <p>{JSON.stringify(data?.toString())}</p>
+      <p>Does it works?: {data && data[0] ? "Yes!!" : "Noo"}</p>
+      <p>Balance? {data && formatEther(data[1])}</p>
       <p>{statusWrite}</p>
       <p>{errorWrite?.message}</p>
       <form onSubmit={handleSubmit}>

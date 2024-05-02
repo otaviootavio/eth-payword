@@ -7,6 +7,7 @@ import {
 } from "../generated";
 import { config } from "./../wagmi.ts";
 import { useState } from "react";
+import { formatEther, parseEther } from "viem";
 
 const ContractInfo = () => {
   const address = import.meta.env.VITE_CONTRACT_ADDRESS;
@@ -41,7 +42,7 @@ const ContractInfo = () => {
       <p>Channel tip: {channelTip}</p>
       <p>Channel sender: {channelSender}</p>
       <p>Total word count: {totalWordCount?.toString()}</p>
-      <p>balance: {balance.toString()}</p>
+      <p>balance: {formatEther(balance)}</p>
     </div>
   );
 };

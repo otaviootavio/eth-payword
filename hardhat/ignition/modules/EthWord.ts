@@ -22,10 +22,10 @@ function createHashchain(secret: string, length: number): string[] {
 }
 
 const defaultRecipient = "0xdD2FD4581271e230360230F9337D5c0430Bf44C0";
-const hashChain = createHashchain("secret", 20);
-const tip = hashChain[19];
+const hashChain = createHashchain("secret", 21);
+const tip = hashChain[20];
 const wordCount = 20;
-const initialBalance = parseEther("0.0001");
+const initialBalance = parseEther("20");
 
 const EthWordModule = buildModule("EthWord", (m) => {
   const recipient = m.getParameter("recipient", defaultRecipient);

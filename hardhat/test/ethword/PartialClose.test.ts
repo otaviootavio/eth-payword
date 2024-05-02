@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { bytesToHex } from "viem";
 import { deployEthWord } from "../utils/deployEthWord";
 
-describe("Close Channel", function () {
+describe("Partial close", function () {
   describe("Channel balance", function () {
     it("Should close the channel after send h0 and change balance to 0", async function () {
       const { ethWord, chainSize, otherAccount, publicClient, hashChain } =
@@ -52,7 +52,7 @@ describe("Close Channel", function () {
         ammount,
       } = await loadFixture(deployEthWord);
 
-      const M = 100;
+      const M = 8;
 
       await ethWord.write.closeChannel(
         [bytesToHex(hashChain[chainSize - M], { size: 32 }), BigInt(M)],
