@@ -4,7 +4,7 @@ import {
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
 import { bytesToHex } from "viem";
-import { deployEthWord } from "../utils/deployEthWord";
+import { deployEthWord, hashM } from "../utils/deployEthWord";
 
 describe("Close Channel", function () {
   describe("Channel balance", function () {
@@ -52,16 +52,14 @@ describe("Close Channel", function () {
         ammount,
       } = await loadFixture(deployEthWord);
 
-      const M = 100;
-
       await ethWord.write.closeChannel(
-        [bytesToHex(hashChain[chainSize - M], { size: 32 }), BigInt(M)],
+        [bytesToHex(hashChain[chainSize - hashM], { size: 32 }), BigInt(hashM)],
         { account: otherAccount.account }
       );
 
       expect(
         await publicClient.getBalance({ address: ethWord.address })
-      ).to.equal(ammount - (BigInt(M) * ammount) / BigInt(chainSize));
+      ).to.equal(ammount - (BigInt(hashM) * ammount) / BigInt(chainSize));
     });
   });
 
@@ -100,23 +98,21 @@ describe("Close Channel", function () {
       expect(channelTip).to.equal(bytesToHex(hashChain[chainSize - 1]));
     });
 
-    it("Should send m of n hash and change its hashtip to HN-M and ", async function () {
+    it("Should send m of n hash and change its hashtip to HN-hashM and ", async function () {
       const { ethWord, chainSize, hashChain, otherAccount } = await loadFixture(
         deployEthWord
       );
 
-      const M = 8;
-
       await ethWord.write.closeChannel(
-        [bytesToHex(hashChain[chainSize - M], { size: 32 }), BigInt(M)],
+        [bytesToHex(hashChain[chainSize - hashM], { size: 32 }), BigInt(hashM)],
         { account: otherAccount.account }
       );
 
       const totalWordCount = await ethWord.read.totalWordCount();
       const channelTip = await ethWord.read.channelTip();
 
-      expect(totalWordCount).to.equal(BigInt(chainSize - M));
-      expect(channelTip).to.equal(bytesToHex(hashChain[chainSize - M]));
+      expect(totalWordCount).to.equal(BigInt(chainSize - hashM));
+      expect(channelTip).to.equal(bytesToHex(hashChain[chainSize - hashM]));
     });
   });
 });

@@ -19,7 +19,7 @@ function createHashchain(secret: Uint8Array, length: number): Uint8Array[] {
 }
 
 async function deployEthWord() {
-  const chainSize: number = 10000;
+  const chainSize: number = 10;
   const secret: Uint8Array = stringToBytes("segredo");
   const ammount: bigint = parseEther("1");
 

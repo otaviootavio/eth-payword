@@ -1,7 +1,7 @@
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
 import { bytesToHex } from "viem";
-import { deployEthWord } from "../utils/deployEthWord";
+import { deployEthWord, hashM } from "../utils/deployEthWord";
 
 describe("User", function () {
   it("Should receive the full channel balance", async function () {
@@ -80,7 +80,7 @@ describe("User", function () {
     );
   });
 
-  it("Should receive M hash of the channel balance", async function () {
+  it("Should receive hashM hash of the channel balance", async function () {
     const {
       ethWord,
       chainSize,
@@ -90,14 +90,12 @@ describe("User", function () {
       ammount,
     } = await loadFixture(deployEthWord);
 
-    const M = 4;
-
     const initialOtherBalance = await publicClient.getBalance({
       address: otherAccount.account.address,
     });
 
     const txResponseId = await ethWord.write.closeChannel(
-      [bytesToHex(hashChain[chainSize - M], { size: 32 }), BigInt(M)],
+      [bytesToHex(hashChain[chainSize - hashM], { size: 32 }), BigInt(hashM)],
       { account: otherAccount.account }
     );
 
@@ -114,7 +112,7 @@ describe("User", function () {
       address: otherAccount.account.address,
     });
 
-    const ammountToMHashes = (BigInt(M) * ammount) / BigInt(chainSize);
+    const ammountToMHashes = (BigInt(hashM) * ammount) / BigInt(chainSize);
 
     expect(finalOtherBalance).to.equal(
       initialOtherBalance + ammountToMHashes - actualFee

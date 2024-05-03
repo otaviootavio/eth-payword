@@ -1,6 +1,11 @@
 import hre from "hardhat";
 import { parseEther, stringToBytes, keccak256, bytesToHex } from "viem";
 
+export const hashM = 100;
+const chainSize: number = 10000;
+const secret: Uint8Array = stringToBytes("segredo");
+const ammount: bigint = parseEther("1");
+
 export function createHashchain(
   secret: Uint8Array,
   length: number
@@ -17,10 +22,6 @@ export function createHashchain(
 }
 
 export async function deployEthWord() {
-  const chainSize: number = 10000;
-  const secret: Uint8Array = stringToBytes("segredo");
-  const ammount: bigint = parseEther("1");
-
   // Contracts are deployed using the first signer/account by default
   const [owner, otherAccount] = await hre.viem.getWalletClients();
 
