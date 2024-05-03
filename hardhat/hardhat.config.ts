@@ -9,9 +9,13 @@ const COINMARKETCAP_API = vars.get("COINMARKETCAP_API");
 const config: HardhatUserConfig = {
   solidity: "0.8.24",
   gasReporter: {
+    outputJSON: true,
+    outputJSONFile: "out.json",
+    includeBytecodeInJSON: false,
+    suppressTerminalOutput: true,
     currency: "USD",
     coinmarketcap: COINMARKETCAP_API,
-    L1: "ethereum",
+    L1: "polygon",
   },
   networks: {
     hardhat: {},
