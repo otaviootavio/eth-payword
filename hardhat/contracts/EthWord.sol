@@ -1,29 +1,25 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract EthWord {
+contract EthWord is ReentrancyGuard {
     address payable public channelSender;
     address payable public channelRecipient;
     uint public totalWordCount;
     bytes32 public channelTip;
-    bool private isChannelClosed;
 
     constructor(address to, uint wordCount, bytes32 tip) payable {
+        require(to != address(0), "Recipient cannot be the zero address");
+        require(wordCount > 0, "Word count must be positive");
+        require(tip != 0, "Initial tip cannot be zero");
+
         channelRecipient = payable(to);
         channelSender = payable(msg.sender);
         totalWordCount = wordCount;
         channelTip = tip;
-        isChannelClosed = false;
     }
 
-    modifier noReentrancy() {
-        require(!isChannelClosed, "Channel already closed");
-        isChannelClosed = true;
-        _;
-        isChannelClosed = false;
-    }
-
-    function closeChannel(bytes32 _word, uint _wordCount) public noReentrancy {
+    function closeChannel(bytes32 _word, uint _wordCount) public nonReentrant {
         require(
             msg.sender == channelRecipient,
             "Only the recipient can close the channel"
@@ -52,9 +48,6 @@ contract EthWord {
             msg.sender == channelRecipient,
             "Only the recipient can simulate closing the channel"
         );
-        if (isChannelClosed) {
-            return (false, 0);
-        }
 
         bool isValid = validateChannelClosure(_word, _wordCount);
         if (!isValid) {
