@@ -72,17 +72,17 @@ In other terminal, deploy your contracts on the localhost network
 npx hardhat ignition deploy ignition/modules/EthWord.ts --network localhost
 ```
 
-The output is the smartcontract address. If you are using the Frontend,
-you need manually to setup this address at `.env`.
+The output is the smart contract address. If you are using the Frontend,
+you need manually to set up this address at `.env`.
 The default first address is of hardhat is
 
 ```
 0x5FbDB2315678afecb367f032d93F642f64180aa3
 ```
 
-### Api KEYS
+### API KEYS
 
-In some cases, you will neet to setup the `apikeys` at `hardhat/hardhat.config.ts`
+In some cases, you will need to set up the `apikeys` at `hardhat/hardhat.config.ts`
 
 `ALCHEMY_API_KEY` --> needed to deploy at any network
 
@@ -90,7 +90,7 @@ In some cases, you will neet to setup the `apikeys` at `hardhat/hardhat.config.t
 
 `COINMARKETCAP_API` --> Need to make the gas tests
 
-To correctely setup this variables, use:
+To correctly set up these variables, use:
 
 ```
 npx hardhat vars set ETHERSCAN_API_KEY
