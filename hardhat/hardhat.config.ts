@@ -16,6 +16,7 @@ const config: HardhatUserConfig = {
     currency: "USD",
     coinmarketcap: COINMARKETCAP_API,
     L1: "polygon",
+    offline: true,
   },
   networks: {
     hardhat: {},
