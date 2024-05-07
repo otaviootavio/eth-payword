@@ -1,13 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import { parseEther, keccak256 } from "viem";
-
-function toHex(str: string): `0x${string}` {
-  let hex = "";
-  for (let i = 0; i < str.length; i++) {
-    hex += str.charCodeAt(i).toString(16);
-  }
-  return `0x${hex}`;
-}
+import { parseEther, keccak256, toHex } from "viem";
 
 function createHashchain(secret: string, length: number): string[] {
   let currentHash = keccak256(toHex(secret));
