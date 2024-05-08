@@ -1,10 +1,8 @@
-import {
-  time,
-  loadFixture,
-} from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import hre from "hardhat";
-import { parseEther, stringToBytes, keccak256, bytesToHex } from "viem";
+import { keccak256, bytesToHex } from "viem";
+import { deployEthWord } from "../utils/deployEthWord";
 
 function createHashchain(secret: Uint8Array, length: number): Uint8Array[] {
   let currentHash: Uint8Array = keccak256(secret, "bytes");
@@ -16,41 +14,6 @@ function createHashchain(secret: Uint8Array, length: number): Uint8Array[] {
   }
 
   return hashChain;
-}
-
-async function deployEthWord() {
-  const chainSize: number = 10;
-  const secret: Uint8Array = stringToBytes("segredo");
-  const ammount: bigint = parseEther("1");
-
-  // Contracts are deployed using the first signer/account by default
-  const [owner, otherAccount] = await hre.viem.getWalletClients();
-
-  const defaultRecipient: `0x${string}` = otherAccount.account.address;
-
-  const hashChain = createHashchain(secret, chainSize + 1);
-  const tip = hashChain[chainSize];
-  const wordCount = BigInt(chainSize);
-
-  const ethWord = await hre.viem.deployContract(
-    "EthWord",
-    [defaultRecipient, wordCount, bytesToHex(tip, { size: 32 })],
-    {
-      value: ammount,
-    }
-  );
-
-  const publicClient = await hre.viem.getPublicClient();
-  return {
-    chainSize,
-    hashChain,
-    ethWord,
-    secret,
-    ammount,
-    owner,
-    otherAccount,
-    publicClient,
-  };
 }
 
 describe("Deploy", function () {

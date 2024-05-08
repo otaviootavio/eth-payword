@@ -1,24 +1,19 @@
 {
-  "name": "hardhat-project",
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
+    "@nomicfoundation/hardhat-ignition-ethers": "^0.15.2",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
+    "@nomicfoundation/hardhat-verify": "^2.0.6",
+    "@nomicfoundation/hardhat-viem": "^2.0.1",
+    "@openzeppelin/contracts": "^5.0.2",
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.6",
+    "chai": "^4.4.1",
+    "chai-as-promised": "^7.1.1",
     "hardhat": "^2.22.3",
     "hardhat-gas-reporter": "^2.1.1",
+    "mocha": "^10.4.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "viem": "^2.10.1"
   },
-  "dependencies": {
-    "@nomicfoundation/hardhat-ignition": "^0.15.2",
-    "@nomicfoundation/hardhat-ignition-viem": "^0.15.0",
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
-    "@nomicfoundation/hardhat-verify": "^2.0.0",
-    "@nomicfoundation/hardhat-viem": "^2.0.0",
-    "@nomicfoundation/ignition-core": "^0.15.2",
-    "@openzeppelin/contracts": "^5.0.2",
-    "@types/chai": "^4.2.0",
-    "@types/chai-as-promised": "^7.1.6",
-    "@types/mocha": ">=9.1.0",
-    "chai": "^4.2.0",
-    "solidity-coverage": "^0.8.1"
-  }
+  "name": "hardhat-project"
 }
