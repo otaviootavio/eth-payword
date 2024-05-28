@@ -32,7 +32,7 @@ const ContractInfo = () => {
   })
 
   return (
-    <div className="p-6 max-w-lg mx-auto bg-white rounded-xl shadow-md space-y-4">
+    <div className="p-6 w-1/2 mx-auto bg-white rounded-xl shadow-md space-y-4">
       <h2 className="text-2xl font-bold text-gray-900">Contract Info</h2>
       <p className="text-gray-700">
         <span className="font-semibold">Channel recipient:</span> {channelRecipient}

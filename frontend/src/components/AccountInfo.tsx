@@ -6,7 +6,7 @@ const AccountInfo = () => {
   const { disconnect } = useDisconnect();
 
   return (
-    <div className="p-6 max-w-md mx-auto bg-white rounded-xl shadow-md space-y-4">
+    <div className="p-6 w-1/2  mx-auto bg-white rounded-xl shadow-md space-y-4">
       <h2 className="text-2xl font-bold text-gray-900">Account</h2>
       <div className="text-gray-700">
         <div>
@@ -30,7 +30,7 @@ const AccountInfo = () => {
       )}
       <div>
         <h2 className="text-2xl font-bold text-gray-900">Connect</h2>
-        <div className="space-y-2">
+        <div className="space-x-2 space-y-2 ">
           {connectors.map((connector) => (
             <button
               key={connector.uid}
