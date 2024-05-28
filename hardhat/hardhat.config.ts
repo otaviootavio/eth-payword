@@ -10,14 +10,15 @@ const PRIVATE_KEY = vars.get("PRIVATE_KEY");
 const config: HardhatUserConfig = {
   solidity: "0.8.24",
   gasReporter: {
-    outputJSON: true,
-    outputJSONFile: "out.json",
-    includeBytecodeInJSON: false,
-    suppressTerminalOutput: true,
+    // outputJSON: true,
+    // outputJSONFile: ",out.json",
+    enabled: true,
+    // includeBytecodeInJSON: false,
+    // suppressTerminalOutput: true,
     currency: "USD",
     //coinmarketcap: COINMARKETCAP_API,
     L1: "polygon",
-    offline: true,
+    offline: false,
   },
   networks: {
     hardhat: {},
