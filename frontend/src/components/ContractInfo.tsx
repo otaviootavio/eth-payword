@@ -5,13 +5,12 @@ import {
   useReadEthWordChannelTip,
   useReadEthWordTotalWordCount,
 } from "../generated";
+import { useBalance } from 'wagmi';
 import { config } from "./../wagmi.ts";
-import { useState } from "react";
-import { formatEther, parseEther } from "viem";
+import { formatEther } from "viem";
 
 const ContractInfo = () => {
   const address = import.meta.env.VITE_CONTRACT_ADDRESS;
-  const [balance, setBalance] = useState<bigint>(0n);
 
   const { data: channelRecipient } = useReadEthWordChannelRecipient({
     address,
@@ -28,21 +27,28 @@ const ContractInfo = () => {
   const { data: totalWordCount } = useReadEthWordTotalWordCount({
     address,
   });
-
-  getBalance(config.getClient(), {
-    address: address,
-  }).then((value) => {
-    setBalance(value);
-  });
+  const { data: balance } = useBalance({
+    address,
+  })
 
   return (
-    <div>
-      <h2>Contract info</h2>
-      <p>Channel recipient: {channelRecipient}</p>
-      <p>Channel tip: {channelTip}</p>
-      <p>Channel sender: {channelSender}</p>
-      <p>Total word count: {totalWordCount?.toString()}</p>
-      <p>balance: {formatEther(balance)}</p>
+    <div className="p-6 max-w-lg mx-auto bg-white rounded-xl shadow-md space-y-4">
+      <h2 className="text-2xl font-bold text-gray-900">Contract Info</h2>
+      <p className="text-gray-700">
+        <span className="font-semibold">Channel recipient:</span> {channelRecipient}
+      </p>
+      <p className="text-gray-700">
+        <span className="font-semibold">Channel tip:</span> {channelTip}
+      </p>
+      <p className="text-gray-700">
+        <span className="font-semibold">Channel sender:</span> {channelSender}
+      </p>
+      <p className="text-gray-700">
+        <span className="font-semibold">Total word count:</span> {totalWordCount?.toString()}
+      </p>
+      <p className="text-gray-700">
+        <span className="font-semibold">Balance:</span> {formatEther(balance?.value || 0n)}
+      </p>
     </div>
   );
 };
