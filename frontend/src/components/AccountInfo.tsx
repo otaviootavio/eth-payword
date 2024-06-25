@@ -13,7 +13,8 @@ const AccountInfo = () => {
           <span className="font-semibold">Status:</span> {account.status}
         </div>
         <div>
-          <span className="font-semibold">Addresses:</span> {JSON.stringify(account.addresses)}
+          <span className="font-semibold">Addresses:</span>{" "}
+          {JSON.stringify(account.addresses)}
         </div>
         <div>
           <span className="font-semibold">Chain ID:</span> {account.chainId}

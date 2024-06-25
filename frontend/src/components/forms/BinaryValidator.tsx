@@ -20,7 +20,13 @@ export function BinaryValidator({
   return (
     <div>
       <label className="text-gray-700">Hexadecimal Input: </label>
-      <input type="text" value={value} onChange={handleChange} className="bg-white border border-gray-300 rounded-md p-2 w-full text-gray-700" placeholder="Binary Validator" />
+      <input
+        type="text"
+        value={value}
+        onChange={handleChange}
+        className="bg-white border border-gray-300 rounded-md p-2 w-full text-gray-700"
+        placeholder="Binary Validator"
+      />
       {!isValid && (
         <p style={{ color: "red" }}>
           Input must be a valid 64-character hexadecimal starting with 0x.

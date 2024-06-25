@@ -4,7 +4,7 @@ import {
   useReadEthWordChannelTip,
   useReadEthWordTotalWordCount,
 } from "../generated";
-import { useBalance } from 'wagmi';
+import { useBalance } from "wagmi";
 import { formatEther } from "viem";
 
 const ContractInfo = () => {
@@ -27,13 +27,14 @@ const ContractInfo = () => {
   });
   const { data: balance } = useBalance({
     address,
-  })
+  });
 
   return (
     <div className="p-6 w-1/2 mx-auto bg-white rounded-xl shadow-md space-y-4">
       <h2 className="text-2xl font-bold text-gray-900">Contract Info</h2>
       <p className="text-gray-700">
-        <span className="font-semibold">Channel recipient:</span> {channelRecipient}
+        <span className="font-semibold">Channel recipient:</span>{" "}
+        {channelRecipient}
       </p>
       <p className="text-gray-700">
         <span className="font-semibold">Channel tip:</span> {channelTip}
@@ -42,10 +43,12 @@ const ContractInfo = () => {
         <span className="font-semibold">Channel sender:</span> {channelSender}
       </p>
       <p className="text-gray-700">
-        <span className="font-semibold">Total word count:</span> {totalWordCount?.toString()}
+        <span className="font-semibold">Total word count:</span>{" "}
+        {totalWordCount?.toString()}
       </p>
       <p className="text-gray-700">
-        <span className="font-semibold">Balance:</span> {formatEther(balance?.value || 0n)}
+        <span className="font-semibold">Balance:</span>{" "}
+        {formatEther(balance?.value || 0n)}
       </p>
     </div>
   );

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { BinaryValidator } from "./BinaryValidator";
 import { BigIntInput } from "./BigIntInput";
 import {
-  useReadEthWordChannelRecipient,
   useReadEthWordChannelSender,
   useReadEthWordChannelTip,
   useReadEthWordSimulateCloseChannel,
@@ -19,11 +18,19 @@ export function CloseChannel() {
   const [bigIntValue, setBigIntValue] = useState<bigint>(0n);
 
   const { refetch: refetchChannelTip } = useReadEthWordChannelTip({ address });
-  const { refetch: refetchChannelSender } = useReadEthWordChannelSender({ address });
-  const { refetch: refetchTotalWordCount } = useReadEthWordTotalWordCount({ address });
+  const { refetch: refetchChannelSender } = useReadEthWordChannelSender({
+    address,
+  });
+  const { refetch: refetchTotalWordCount } = useReadEthWordTotalWordCount({
+    address,
+  });
   const { refetch: refetchBalance } = useBalance({ address });
 
-  const { writeContractAsync, status: statusWrite, error: errorWrite } = useWriteEthWordCloseChannel();
+  const {
+    writeContractAsync,
+    status: statusWrite,
+    error: errorWrite,
+  } = useWriteEthWordCloseChannel();
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
@@ -48,20 +55,35 @@ export function CloseChannel() {
     }
   };
 
-  const { data, status: statusEth, error: errorEth } = useReadEthWordSimulateCloseChannel({
+  const {
+    data,
+    status: statusEth,
+    error: errorEth,
+  } = useReadEthWordSimulateCloseChannel({
     address,
     args: [hexValue, bigIntValue],
     account: account.address,
   });
 
   return (
-      <><p className="text-gray-700">Status: {statusEth}</p><p className="text-red-500">{errorEth?.message}</p><p className="text-gray-700">Does it work?: {data && data[0] ? "Yes!!" : "Noo"}</p><p className="text-gray-700">Balance: {data && formatEther(data[1])}</p><p className="text-gray-700">Write Status: {statusWrite}</p><p className="text-red-500">{errorWrite?.message}</p><form onSubmit={handleSubmit} className="space-y-4">
-      <BinaryValidator onValid={setHexValue} />
-      <BigIntInput onBigIntChange={setBigIntValue} />
-      <input
-        type="submit"
-        value="Gooo!"
-        className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition" />
-    </form></>
+    <>
+      <p className="text-gray-700">Status: {statusEth}</p>
+      <p className="text-red-500">{errorEth?.message}</p>
+      <p className="text-gray-700">
+        Does it work?: {data && data[0] ? "Yes!!" : "Noo"}
+      </p>
+      <p className="text-gray-700">Balance: {data && formatEther(data[1])}</p>
+      <p className="text-gray-700">Write Status: {statusWrite}</p>
+      <p className="text-red-500">{errorWrite?.message}</p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <BinaryValidator onValid={setHexValue} />
+        <BigIntInput onBigIntChange={setBigIntValue} />
+        <input
+          type="submit"
+          value="Gooo!"
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition"
+        />
+      </form>
+    </>
   );
 }
