@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BigIntInput } from "./forms/BigIntInput";
+import SmartContractInput from "./SmartContractInput";
 
 const DeployContract = () => {
   const [bigIntValue, setBigIntValue] = useState<bigint>(0n);
@@ -29,12 +30,8 @@ const DeployContract = () => {
           placeholder="Binary Validator"
         />
       </div>
-      <button
-        type="button"
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition"
-      >
-        Deploy!
-      </button>
+
+      <SmartContractInput />
     </div>
   );
 };
