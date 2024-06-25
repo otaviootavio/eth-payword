@@ -4,68 +4,45 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract EthWordMerkle is ReentrancyGuard {
-    address payable public channelSender;
-    address payable public channelRecipient;
-    uint public totalWordCount;
-    bytes32 public merkleRoot;
-
-    constructor(address to, uint wordCount, bytes32 root) payable {
-        require(to != address(0), "Recipient cannot be the zero address");
-        require(wordCount > 0, "Word count must be positive");
-        require(root != 0, "Initial root cannot be zero");
-
-        channelRecipient = payable(to);
-        channelSender = payable(msg.sender);
-        totalWordCount = wordCount;
-        merkleRoot = root;
-    }
-
-    function closeChannel(bytes32[] calldata proof, bytes32 leaf, uint _wordCount) public nonReentrant {
-        require(msg.sender == channelRecipient, "Only the recipient can close the channel");
-        require(_wordCount <= totalWordCount, "Word count exceeds available words");
-
-        bool isValid = MerkleProof.verify(proof, merkleRoot, leaf);
-        require(isValid, "Invalid proof or WordCount!");
-
-        uint amountToWithdraw = calculateWithdrawAmount(_wordCount);
-        (bool sent, ) = channelRecipient.call{value: amountToWithdraw}("");
-        require(sent, "Failed to send Ether");
-
-        totalWordCount -= _wordCount;
-    }
-
-    function simulateCloseChannel(
-        bytes32[] calldata proof,
-        bytes32 leaf,
-        uint _wordCount
-    ) public view returns (bool, uint) {
-        require(
-            msg.sender == channelRecipient,
-            "Only the recipient can simulate closing the channel"
-        );
-
-        bool isValid = validateChannelClosure(proof, leaf);
-        if (!isValid) {
-            return (false, 0);
+        address public channelSender;
+        address public channelRecipient;
+        uint public startDate;
+        uint public channelTimeout;
+        bytes32 public root;
+    
+        constructor(address to, uint _timeout, bytes32 _root) public payable {
+            require(msg.value>0);
+            channelRecipient = to;
+            channelSender = msg.sender;
+            startDate = now;
+            channelTimeout = _timeout;
+            root = _root;
         }
-
-        uint amountToWithdraw = calculateWithdrawAmount(_wordCount);
-        return (true, amountToWithdraw);
-    }
-
-    function validateChannelClosure(
-        bytes32[] calldata proof,
-        bytes32 leaf
-    ) private view returns (bool) {
-        return MerkleProof.verify(proof, merkleRoot, leaf);
-    }
-
-    function calculateWithdrawAmount(uint _wordCount) private view returns (uint) {
-        uint remainingWords = totalWordCount - _wordCount;
-        if (remainingWords == 0) {
-            return address(this).balance;
+        function AddBalance(bytes32 _newRoot) public payable {
+          if (root < _newRoot)
+              root = keccak256(root, _newRoot);
+          else
+              root = keccak256(_newRoot, root);
         }
-        uint initialWordPrice = address(this).balance / totalWordCount;
-        return initialWordPrice * _wordCount;
+      function CloseChannel(uint256 _amount, bytes32[] proof) public {
+            require(msg.sender == channelRecipient);
+            bytes32 computedHash = keccak256(_amount);
+            require(verifyMerkle(root, computedHash, proof));
+            channelRecipient.transfer(_amount);
+            selfdestruct(channelSender);
+        }
+        function verifyMerkle (bytes32 root, bytes32 leaf, bytes32[] proof) public pure returns (bool) {
+          bytes32 computedHash = leaf;
+          for (uint256 i = 0; i < proof.length; i++) {
+              if (computedHash < proof[i])
+                computedHash = keccak256(computedHash, proof[i]);
+              else
+                computedHash = keccak256(proof[i], computedHash);
+              }
+            return computedHash==root;
+        }
+        function ChannelTimeout() public {
+            require(now >= startDate + channelTimeout);
+            selfdestruct(channelSender);
+        }
     }
-}
