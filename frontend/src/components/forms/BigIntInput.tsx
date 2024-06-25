@@ -20,13 +20,13 @@ export function BigIntInput({
 
   return (
     <div className="w-full">
-      <label>BigInt Input: </label>
+      <label className="text-gray-700">BigInt Input: </label>
       <input
         type="text"
         value={value}
         onChange={handleChange}
         placeholder="Enter a valid BigInt"
-        className="bg-white border border-gray-300 rounded-md p-2 w-full"
+        className="bg-white border border-gray-300 rounded-md p-2 w-full text-gray-700"
       />
     </div>
   );

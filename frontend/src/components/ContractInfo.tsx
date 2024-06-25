@@ -1,4 +1,3 @@
-import { getBalance } from "viem/actions";
 import {
   useReadEthWordChannelRecipient,
   useReadEthWordChannelSender,
@@ -6,7 +5,6 @@ import {
   useReadEthWordTotalWordCount,
 } from "../generated";
 import { useBalance } from 'wagmi';
-import { config } from "./../wagmi.ts";
 import { formatEther } from "viem";
 
 const ContractInfo = () => {
