@@ -3,8 +3,8 @@ import "@nomicfoundation/hardhat-viem";
 import "@nomicfoundation/hardhat-ignition";
 import "hardhat-gas-reporter";
 
-const ALCHEMY_API_KEY = vars.get("ALCHEMY_API_KEY");
-const PRIVATE_KEY = vars.get("PRIVATE_KEY");
+// const ALCHEMY_API_KEY = vars.get("ALCHEMY_API_KEY");
+// const PRIVATE_KEY = vars.get("PRIVATE_KEY");
 //const COINMARKETCAP_API = vars.get("COINMARKETCAP_API");
 
 const config: HardhatUserConfig = {
@@ -22,10 +22,10 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {},
-    sepolia: {
-      url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
-      accounts: [PRIVATE_KEY],
-    },
+    // sepolia: {
+    //   url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+    //   accounts: [PRIVATE_KEY],
+    // },
   },
 };
 
