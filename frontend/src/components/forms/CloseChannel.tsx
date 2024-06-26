@@ -11,8 +11,11 @@ import {
 import { useAccount, useBalance } from "wagmi";
 import { formatEther } from "viem";
 
-export function CloseChannel() {
-  const address = import.meta.env.VITE_CONTRACT_ADDRESS;
+interface CloseChannelProps {
+  address: `0x${string}`;
+}
+
+export const CloseChannel: React.FC<CloseChannelProps> = ({ address }) => {
   const account = useAccount();
   const [hexValue, setHexValue] = useState<`0x${string}`>("0x0");
   const [bigIntValue, setBigIntValue] = useState<bigint>(0n);
@@ -66,14 +69,26 @@ export function CloseChannel() {
   });
 
   return (
-    <>
-      <p className="text-gray-700">Status: {statusEth}</p>
-      <p className="text-red-500">{errorEth?.message}</p>
-      <p className="text-gray-700">
-        Does it work?: {data && data[0] ? "Yes!!" : "Noo"}
+    <div className="p-6 mx-auto bg-white space-y-4">
+      <p className="text-gray-900 font-bold">
+        Status: <span className="font-normal">{statusEth}</span>
       </p>
-      <p className="text-gray-700">Balance: {data && formatEther(data[1])}</p>
-      <p className="text-gray-700">Write Status: {statusWrite}</p>
+      <p className="text-red-500">{errorEth?.message}</p>
+      <p className="text-gray-900 font-bold">
+        Does it work?:{" "}
+        {data && data[0] ? (
+          <span className="font-normal text-blue-700">Yes!!</span>
+        ) : (
+          <span className="font-normal text-red-700">Noo!</span>
+        )}
+      </p>
+      <p className="text-gray-900 font-bold">
+        Balance:
+        <span className="font-normal">{data && formatEther(data[1])}</span>
+      </p>
+      <p className="text-gray-900 font-bold">
+        Write Status: <span className="font-normal">{statusWrite}</span>
+      </p>
       <p className="text-red-500">{errorWrite?.message}</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <BinaryValidator onValid={setHexValue} />
@@ -81,9 +96,9 @@ export function CloseChannel() {
         <input
           type="submit"
           value="Gooo!"
-          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition"
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-900 font-bold transition"
         />
       </form>
-    </>
+    </div>
   );
-}
+};

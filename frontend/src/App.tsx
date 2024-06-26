@@ -1,7 +1,6 @@
-import ContractInfo from "./components/ContractInfo";
-import ContractWrite from "./components/ContractWrite";
 import AccountInfo from "./components/AccountInfo";
 import DeployContract from "./components/DeployContract";
+import QuerySmartContract from "./components/QuerySmartContract";
 
 function App() {
   return (
@@ -15,8 +14,7 @@ function App() {
         <main className="flex-grow flex flex-col items-center justify-center p-4 w-full gap-10 pt-12">
           <DeployContract />
           <AccountInfo />
-          <ContractWrite />
-          <ContractInfo />
+          <QuerySmartContract />
         </main>
       </div>
     </>

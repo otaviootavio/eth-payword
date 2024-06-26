@@ -2,11 +2,47 @@ import React, { useState } from "react";
 import { Solc } from "solc-browserify";
 import { useDeployContract } from "wagmi";
 import { Abi } from "abitype";
+import { type Address, type Hash, parseEther } from "viem";
+import { config } from "../wagmi";
+import { waitForTransactionReceipt } from "wagmi/actions";
 
-const SmartContractInput: React.FC = () => {
+interface SmartConractProps {
+  amountEth: bigint;
+  numersOfToken: number;
+  toAddress: Address;
+}
+
+const SmartContractInput: React.FC<SmartConractProps> = ({
+  amountEth,
+  numersOfToken,
+  toAddress,
+}) => {
   const [byteCode, setByteCode] = useState("");
   const [abi, setAbi] = useState<Abi>();
-  const { deployContract } = useDeployContract();
+  const { deployContractAsync } = useDeployContract();
+  const [contractAddress, setContractAddress] = useState<Address>();
+  const deployContract = async () => {
+    if (!abi) return;
+    const newTxHash: Hash = await deployContractAsync({
+      abi: abi,
+      bytecode: `0x${byteCode}`,
+      args: [
+        toAddress,
+        numersOfToken,
+        "0x9242f802e97c1ae892af1cf60a9aa49283ac8a2201bb98b543ac1a6fa7452fa2",
+      ],
+      value: parseEther(amountEth.toString()),
+    });
+
+    const x = await waitForTransactionReceipt(config, {
+      hash: newTxHash,
+      confirmations: 1,
+    });
+
+    if (!x.contractAddress) return; // Handle error
+
+    setContractAddress(x.contractAddress);
+  };
 
   async function compileSourceCode() {
     const contract = `// SPDX-License-Identifier: UNLICENSED
@@ -100,8 +136,6 @@ const SmartContractInput: React.FC = () => {
       contract,
     )) as CompiledContracts;
 
-    console.log(JSON.stringify(compiledContracts));
-
     const outBytecode =
       compiledContracts.contracts.Compiled_Contracts.EthWord.evm.bytecode
         .object;
@@ -111,8 +145,6 @@ const SmartContractInput: React.FC = () => {
 
     setByteCode(outBytecode);
     setAbi(outAbi);
-
-    console.log(JSON.stringify(outAbi));
   }
 
   return (
@@ -129,22 +161,14 @@ const SmartContractInput: React.FC = () => {
         <div>
           <button
             className="px-4 py-2 bg-red-500 text-white rounded hover:bg-blue-700 transition"
-            onClick={() => {
-              if (!abi) return;
-              deployContract({
-                abi: abi,
-                bytecode: `0x${byteCode}`,
-                args: [
-                  "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-                  20,
-                  "0x9242f802e97c1ae892af1cf60a9aa49283ac8a2201bb98b543ac1a6fa7452f69",
-                ],
-              });
-            }}
+            onClick={deployContract}
           >
             Deploy!
           </button>
         </div>
+      )}
+      {!!contractAddress && (
+        <div className="text-gray-900">{contractAddress}</div>
       )}
     </div>
   );

@@ -18,8 +18,7 @@ export function BinaryValidator({
   };
 
   return (
-    <div>
-      <label className="text-gray-700">Hexadecimal Input: </label>
+    <>
       <input
         type="text"
         value={value}
@@ -32,6 +31,6 @@ export function BinaryValidator({
           Input must be a valid 64-character hexadecimal starting with 0x.
         </p>
       )}
-    </div>
+    </>
   );
 }

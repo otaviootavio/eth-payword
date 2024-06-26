@@ -7,30 +7,21 @@ import {
 import { useBalance } from "wagmi";
 import { formatEther } from "viem";
 
-const ContractInfo = () => {
-  const address = import.meta.env.VITE_CONTRACT_ADDRESS;
+interface ContractInfoProps {
+  address: `0x${string}`;
+}
 
+const ContractInfo: React.FC<ContractInfoProps> = ({ address }) => {
   const { data: channelRecipient } = useReadEthWordChannelRecipient({
     address,
   });
-
-  const { data: channelTip } = useReadEthWordChannelTip({
-    address,
-  });
-
-  const { data: channelSender } = useReadEthWordChannelSender({
-    address,
-  });
-
-  const { data: totalWordCount } = useReadEthWordTotalWordCount({
-    address,
-  });
-  const { data: balance } = useBalance({
-    address,
-  });
+  const { data: channelTip } = useReadEthWordChannelTip({ address });
+  const { data: channelSender } = useReadEthWordChannelSender({ address });
+  const { data: totalWordCount } = useReadEthWordTotalWordCount({ address });
+  const { data: balance } = useBalance({ address });
 
   return (
-    <div className="p-6 w-1/2 mx-auto bg-white rounded-xl shadow-md space-y-4">
+    <div className="p-6 mx-auto bg-white space-y-4">
       <h2 className="text-2xl font-bold text-gray-900">Contract Info</h2>
       <p className="text-gray-700">
         <span className="font-semibold">Channel recipient:</span>{" "}
