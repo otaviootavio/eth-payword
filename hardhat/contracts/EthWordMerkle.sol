@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract EthWordMerkle is ReentrancyGuard {
     address public immutable channelSender;
@@ -18,13 +18,6 @@ contract EthWordMerkle is ReentrancyGuard {
         root = _root;
     }
 
-    /**
-     * @notice Closes the channel by transferring the specified amount to the recipient.
-     * @dev Validates the provided Merkle proof before transferring the funds.
-     * @param _amount The amount to be transferred.
-     * @param _random A random value to prevent replay attacks.
-     * @param proof The Merkle proof array.
-     */
     function closeChannel(uint256 _amount, uint256 _random, bytes32[] calldata proof) external nonReentrant {
         require(msg.sender == channelRecipient, "Only the channel recipient can close the channel.");
         
@@ -45,14 +38,11 @@ contract EthWordMerkle is ReentrancyGuard {
         require(success, "Transfer failed.");
     }
 
-    /**
-     * @notice Allows the sender to reclaim the funds after the channel timeout.
-     */
-    function channelTimeout() external nonReentrant {
-        require(block.timestamp >= startDate + channelTimeout, "Channel timeout not reached.");
-        require(msg.sender == channelSender, "Only the channel sender can reclaim the funds.");
+    // function channelTimeout() external nonReentrant {
+    //     require(block.timestamp >= startDate + channelTimeout, "Channel timeout not reached.");
+    //     require(msg.sender == channelSender, "Only the channel sender can reclaim the funds.");
         
-        (bool success, ) = channelSender.call{value: address(this).balance}("");
-        require(success, "Transfer failed.");
-    }
+    //     (bool success, ) = channelSender.call{value: address(this).balance}("");
+    //     require(success, "Transfer failed.");
+    // }
 }
