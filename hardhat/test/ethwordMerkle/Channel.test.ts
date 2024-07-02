@@ -4,7 +4,7 @@ import {
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
 import { bytesToHex } from "viem";
-import { deployEthWord, hashM } from "../utils/deployEthWordMerkle";
+import { deployEthWordMerkle, hashM } from "../utils/deployEthWordMerkle";
 
 describe("Close Channel", function () {
   describe("Channel balance", function () {
