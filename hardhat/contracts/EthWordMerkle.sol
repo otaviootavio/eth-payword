@@ -1,35 +1,58 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract EthWordMerkle is ReentrancyGuard {
-        address public channelSender;
-        address public channelRecipient;
-        uint public startDate;
-        uint public channelTimeout;
-        bytes32 public root;
-    
-        constructor(address to, uint _timeout, bytes32 _root) payable public {
-            channelRecipient = to;
-            channelSender = msg.sender;
-            startDate = now;
-            channelTimeout = _timeout;
-            root = _root;
-        }
-      function CloseChannel(uint256 _amount, uint256 _random, bytes32[] proof) public {
-            require(msg.sender==channelRecipient);
-            bytes32 computedHash = keccak256(_amount,_random);
-            for (uint256 i = 0; i < proof.length; i++) {
-              bytes32 proofElement = proof[i];
-              if (computedHash < proofElement)
-                computedHash = keccak256(computedHash, proofElement);
-              else
-                computedHash = keccak256(proofElement, computedHash);
-              }
-            require(computedHash==root);
-            channelRecipient.transfer(_amount);
-        }
-        function ChannelTimeout() public {
-            require(now >= startDate + channelTimeout);
-        }
+    address public immutable channelSender;
+    address public immutable channelRecipient;
+    uint256 public immutable startDate;
+    uint256 public immutable channelTimeout;
+    bytes32 public immutable root;
+    constructor(address to, uint256 _timeout, bytes32 _root) payable {
+        require(to != address(0), "Recipient address cannot be zero address.");
+        channelRecipient = to;
+        channelSender = msg.sender;
+        startDate = block.timestamp;
+        channelTimeout = _timeout;
+        root = _root;
     }
+
+    /**
+     * @notice Closes the channel by transferring the specified amount to the recipient.
+     * @dev Validates the provided Merkle proof before transferring the funds.
+     * @param _amount The amount to be transferred.
+     * @param _random A random value to prevent replay attacks.
+     * @param proof The Merkle proof array.
+     */
+    function closeChannel(uint256 _amount, uint256 _random, bytes32[] calldata proof) external nonReentrant {
+        require(msg.sender == channelRecipient, "Only the channel recipient can close the channel.");
+        
+        bytes32 computedHash = keccak256(abi.encodePacked(_amount, _random));
+        
+        for (uint256 i = 0; i < proof.length; i++) {
+            bytes32 proofElement = proof[i];
+            if (computedHash < proofElement) {
+                computedHash = keccak256(abi.encodePacked(computedHash, proofElement));
+            } else {
+                computedHash = keccak256(abi.encodePacked(proofElement, computedHash));
+            }
+        }
+        
+        require(computedHash == root, "Invalid Merkle proof.");
+        
+        (bool success, ) = channelRecipient.call{value: _amount}("");
+        require(success, "Transfer failed.");
+    }
+
+    /**
+     * @notice Allows the sender to reclaim the funds after the channel timeout.
+     */
+    function channelTimeout() external nonReentrant {
+        require(block.timestamp >= startDate + channelTimeout, "Channel timeout not reached.");
+        require(msg.sender == channelSender, "Only the channel sender can reclaim the funds.");
+        
+        (bool success, ) = channelSender.call{value: address(this).balance}("");
+        require(success, "Transfer failed.");
+    }
+}
