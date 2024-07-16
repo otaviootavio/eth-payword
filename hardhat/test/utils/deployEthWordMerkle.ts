@@ -23,17 +23,33 @@ export function createHashchain(
   return hashChain;
 }
 
-function createMerkleTree(values: Uint8Array[]): Uint8Array {
-  const tree = StandardMerkleTree.of(values, ["bytes", "uint8"]);
-
-  fs.writeFileSync("tree.json", JSON.stringify(tree.dump()));
-  return tree;
+function hashPair(left: Uint8Array, right: Uint8Array): Uint8Array {
+  const concatenatedHash = Uint8Array.from([...left, ...right]);
+  return keccak256(concatenatedHash, "bytes");
 }
 
-function getMerkleRoot(tree: Uint8Array): Uint8Array {
-  const tree = StandardMerkleTree.load(JSON.parse(fs.readFileSync("tree.json", "uint8")));
+function createMerkleTree(leaves: Uint8Array[]): [Uint8Array[], Uint8Array] {
+  let level: Uint8Array[] = leaves;
+  let tree: Uint8Array[] = [...leaves];
 
-  return tree.root;
+  while (level.length > 1) {
+    let newLevel: Uint8Array[] = [];
+
+    for (let i = 0; i < level.length; i += 2) {
+      if (i + 1 < level.length) {
+        const combined = hashPair(level[i], level[i + 1]);
+        newLevel.push(combined);
+      } else {
+        newLevel.push(level[i]);
+      }
+    }
+
+    tree = tree.concat(newLevel);
+    level = newLevel;
+  }
+
+  const root = level[0];
+  return [tree, root];
 }
 
 
@@ -41,14 +57,10 @@ export async function deployEthWordMerkle() {
   const [owner, otherAccount] = await hre.viem.getWalletClients();
   const defaultRecipient = `0x${otherAccount.account.address}`;
 
-  let leaves: Uint8Array[] = [];
 
-  leaves = createHashchain(secret, chainSize + 1);
-  const root = getMerkleRoot(leaves);
+  const leaves = createHashchain(secret, chainSize + 1);
+  const [merkleTree, merkleRoot] = createMerkleTree(leaves);
   const wordCount = BigInt(chainSize);
-
-  const merkleTree = createMerkleTree(leaves);
-  const merkleRoot = getMerkleRoot(merkleTree);
 
   const ethWordMerkle = await hre.viem.deployContract(
     "EthWordMerkle",

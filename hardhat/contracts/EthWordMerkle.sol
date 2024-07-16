@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract EthWordMerkle is ReentrancyGuard {
+contract EthWordMerkle {
     address payable public immutable channelSender;
     address payable public immutable channelRecipient;
     uint256 public immutable startDate;
@@ -22,7 +21,7 @@ contract EthWordMerkle is ReentrancyGuard {
         totalWordCount = wordCount;
     }
 
-    function closeChannel(uint256 _amount, uint256 _random, bytes32[] calldata proof) external nonReentrant {
+    function closeChannel(uint256 _amount, uint256 _random, bytes32[] calldata proof) external {
         require(msg.sender == channelRecipient, "Only the channel recipient can close the channel.");
         
         bool isValid = validateChannelClosure(_amount, _random, proof);
