@@ -68,7 +68,6 @@ const EthWordMerkleModule = buildModule("EthWordMerkle", (m) => {
   console.log("Word count:" + JSON.stringify(wordCountParam.defaultValue));
   console.log("Tip:" + JSON.stringify(tipParam.defaultValue));
   console.log("Timeout:" + JSON.stringify(timeoutParam.defaultValue));
-  console.log("Root:" + root.toString('hex'));
   console.log("Hashchain: " + hashChain);
 
   return { ethWordMerkle };
