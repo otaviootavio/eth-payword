@@ -1,7 +1,5 @@
 import hre from "hardhat";
 import { parseEther, stringToBytes, keccak256, bytesToHex } from "viem";
-import { StandardMerkleTree } from "@openzeppelin/merkle-tree";
-import fs from "fs";
 
 export const hashM = 100;
 const chainSize: number = 1000;

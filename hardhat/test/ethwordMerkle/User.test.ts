@@ -1,27 +1,32 @@
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
-import { bytesToHex } from "viem";
-import { deployEthWord, hashM } from "../utils/deployEthWord";
+import { keccak256, parseEther } from "viem";
+import { deployEthWordMerkle, createMerkleRoot } from "../utils/deployEthWordMerkle";
 
 describe("User", function () {
-  it("Should receive the full channel balance", async function () {
+  it("Should receive the full channel balance on closing the channel with all words", async function () {
     const {
-      ethWord,
-      chainSize,
+      ethWordMerkle,
       otherAccount,
       publicClient,
-      hashChain,
-      ammount,
-    } = await loadFixture(deployEthWord);
+      wordCount,
+      randomness,
+      root,
+    } = await loadFixture(deployEthWordMerkle);
+
+    const words = Array.from({length: wordCount}, (_, i) => i + 1);
+    const [computedRoot, proof] = createMerkleRoot(words, randomness);
+
+    // Ensure the computed root matches the stored root to simulate valid channel closure
+    expect(computedRoot).to.equal(root);
 
     const initialOtherBalance = await publicClient.getBalance({
       address: otherAccount.account.address,
     });
 
-    const txResponseId = await ethWord.write.closeChannel(
-      [bytesToHex(hashChain[0], { size: 32 }), BigInt(chainSize)],
-      { account: otherAccount.account }
-    );
+    const txResponseId = await ethWordMerkle.write.closeChannel(wordCount, randomness, proof, {
+      account: otherAccount.account
+    });
 
     const txReceipt = await publicClient.getTransactionReceipt({
       hash: txResponseId,
@@ -29,36 +34,35 @@ describe("User", function () {
 
     const gasUsed = BigInt(txReceipt.gasUsed.toString());
     const gasPriceUsed = BigInt(txReceipt.effectiveGasPrice);
-
     const actualFee = gasUsed * gasPriceUsed;
-
     const finalOtherBalance = await publicClient.getBalance({
       address: otherAccount.account.address,
     });
 
-    expect(finalOtherBalance).to.equal(
-      initialOtherBalance + ammount - actualFee
-    );
+    // Here we assume that closing the channel with all words will allow the user to withdraw the full balance
+    expect(finalOtherBalance).to.equal(initialOtherBalance + parseEther("1") - actualFee);
   });
 
-  it("Should receive one hash of the channel balance", async function () {
+  it("Should receive a fraction of the channel balance based on a valid subset of words", async function () {
     const {
-      ethWord,
-      chainSize,
+      ethWordMerkle,
       otherAccount,
       publicClient,
-      hashChain,
-      ammount,
-    } = await loadFixture(deployEthWord);
+      wordCount,
+      randomness
+    } = await loadFixture(deployEthWordMerkle);
+
+    const wordsSubset = [1, 2, 3]; // Example subset of words for the test
+    const [_, proofSubset] = createMerkleRoot(wordsSubset, randomness);
 
     const initialOtherBalance = await publicClient.getBalance({
       address: otherAccount.account.address,
     });
 
-    const txResponseId = await ethWord.write.closeChannel(
-      [bytesToHex(hashChain[chainSize - 1], { size: 32 }), BigInt(1)],
-      { account: otherAccount.account }
-    );
+    const amountOfWordsToClose = wordsSubset.length;
+    const txResponseId = await ethWordMerkle.write.closeChannel(amountOfWordsToClose, randomness, proofSubset, {
+      account: otherAccount.account
+    });
 
     const txReceipt = await publicClient.getTransactionReceipt({
       hash: txResponseId,
@@ -66,56 +70,14 @@ describe("User", function () {
 
     const gasUsed = BigInt(txReceipt.gasUsed.toString());
     const gasPriceUsed = BigInt(txReceipt.effectiveGasPrice);
-
     const actualFee = gasUsed * gasPriceUsed;
 
     const finalOtherBalance = await publicClient.getBalance({
       address: otherAccount.account.address,
     });
 
-    const ammountOneHash = ammount / BigInt(chainSize);
+    const expectedAmount = (parseEther("1") * BigInt(amountOfWordsToClose)) / BigInt(wordCount);
 
-    expect(finalOtherBalance).to.equal(
-      initialOtherBalance + ammountOneHash - actualFee
-    );
-  });
-
-  it("Should receive hashM hash of the channel balance", async function () {
-    const {
-      ethWord,
-      chainSize,
-      otherAccount,
-      publicClient,
-      hashChain,
-      ammount,
-    } = await loadFixture(deployEthWord);
-
-    const initialOtherBalance = await publicClient.getBalance({
-      address: otherAccount.account.address,
-    });
-
-    const txResponseId = await ethWord.write.closeChannel(
-      [bytesToHex(hashChain[chainSize - hashM], { size: 32 }), BigInt(hashM)],
-      { account: otherAccount.account }
-    );
-
-    const txReceipt = await publicClient.getTransactionReceipt({
-      hash: txResponseId,
-    });
-
-    const gasUsed = BigInt(txReceipt.gasUsed.toString());
-    const gasPriceUsed = BigInt(txReceipt.effectiveGasPrice);
-
-    const actualFee = gasUsed * gasPriceUsed;
-
-    const finalOtherBalance = await publicClient.getBalance({
-      address: otherAccount.account.address,
-    });
-
-    const ammountToMHashes = (BigInt(hashM) * ammount) / BigInt(chainSize);
-
-    expect(finalOtherBalance).to.equal(
-      initialOtherBalance + ammountToMHashes - actualFee
-    );
+    expect(finalOtherBalance).to.equal(initialOtherBalance + expectedAmount - actualFee);
   });
 });

@@ -188,23 +188,56 @@
     "gasData": [],
     "numberOfCalls": 0
    },
-   "EthWordMerkle_de928b30": {
-    "key": "de928b30",
-    "isCall": false,
+   "EthWordMerkle_2ef2d55e": {
+    "key": "2ef2d55e",
+    "isCall": true,
     "contract": "EthWordMerkle",
-    "method": "closeChannel",
-    "fnSig": "closeChannel(bytes32[],bytes32,uint256)",
+    "method": "channelTimeout",
+    "fnSig": "channelTimeout()",
     "intrinsicGas": [],
     "callData": [],
     "gasData": [],
     "numberOfCalls": 0
    },
-   "EthWordMerkle_2eb4a7ab": {
-    "key": "2eb4a7ab",
+   "EthWordMerkle_4aa4217f": {
+    "key": "4aa4217f",
+    "isCall": false,
+    "contract": "EthWordMerkle",
+    "method": "closeChannel",
+    "fnSig": "closeChannel(uint256,uint256,bytes32[])",
+    "intrinsicGas": [],
+    "callData": [],
+    "gasData": [],
+    "numberOfCalls": 0
+   },
+   "EthWordMerkle_ebf0c717": {
+    "key": "ebf0c717",
     "isCall": true,
     "contract": "EthWordMerkle",
-    "method": "merkleRoot",
-    "fnSig": "merkleRoot()",
+    "method": "root",
+    "fnSig": "root()",
+    "intrinsicGas": [],
+    "callData": [],
+    "gasData": [],
+    "numberOfCalls": 0
+   },
+   "EthWordMerkle_d76970ba": {
+    "key": "d76970ba",
+    "isCall": true,
+    "contract": "EthWordMerkle",
+    "method": "simulateCloseChannel",
+    "fnSig": "simulateCloseChannel(uint256,uint256,bytes32[])",
+    "intrinsicGas": [],
+    "callData": [],
+    "gasData": [],
+    "numberOfCalls": 0
+   },
+   "EthWordMerkle_0b97bc86": {
+    "key": "0b97bc86",
+    "isCall": true,
+    "contract": "EthWordMerkle",
+    "method": "startDate",
+    "fnSig": "startDate()",
     "intrinsicGas": [],
     "callData": [],
     "gasData": [],
