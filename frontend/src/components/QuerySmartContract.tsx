@@ -18,11 +18,7 @@ const QuerySmartContract = () => {
         className="w-full p-2 border border-gray-300 rounded text-gray-900"
         placeholder="Enter contract address"
       />
-      {address && (
-        <>
-          <ContractInfo address={address} /> <CloseChannel address={address} />
-        </>
-      )}
+      <ContractInfo address={address} /> <CloseChannel address={address} />
     </div>
   );
 };

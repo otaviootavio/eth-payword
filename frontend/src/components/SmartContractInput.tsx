@@ -10,27 +10,26 @@ interface SmartConractProps {
   amountEth: bigint;
   numersOfToken: number;
   toAddress: Address;
+  tail: string;
 }
 
 const SmartContractInput: React.FC<SmartConractProps> = ({
   amountEth,
   numersOfToken,
   toAddress,
+  tail,
 }) => {
   const [byteCode, setByteCode] = useState("");
   const [abi, setAbi] = useState<Abi>();
   const { deployContractAsync } = useDeployContract();
   const [contractAddress, setContractAddress] = useState<Address>();
+
   const deployContract = async () => {
     if (!abi) return;
     const newTxHash: Hash = await deployContractAsync({
       abi: abi,
       bytecode: `0x${byteCode}`,
-      args: [
-        toAddress,
-        numersOfToken,
-        "0x9242f802e97c1ae892af1cf60a9aa49283ac8a2201bb98b543ac1a6fa7452fa2",
-      ],
+      args: [toAddress, numersOfToken, tail],
       value: parseEther(amountEth.toString()),
     });
 

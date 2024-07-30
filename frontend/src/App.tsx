@@ -1,6 +1,7 @@
 import AccountInfo from "./components/AccountInfo";
 import DeployContract from "./components/DeployContract";
 import QuerySmartContract from "./components/QuerySmartContract";
+import { HashChainExtensionProvider } from "./contexts/wallet/HashChainExtensionProvider";
 
 function App() {
   return (
@@ -12,9 +13,11 @@ function App() {
           </div>
         </header>
         <main className="flex-grow flex flex-col items-center justify-center p-4 w-full gap-10 pt-12">
-          <DeployContract />
-          <AccountInfo />
-          <QuerySmartContract />
+          <HashChainExtensionProvider>
+            <DeployContract />
+            <AccountInfo />
+            <QuerySmartContract />
+          </HashChainExtensionProvider>
         </main>
       </div>
     </>
