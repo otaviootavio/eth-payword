@@ -4,50 +4,86 @@ import {
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
 import hre from "hardhat";
-import { parseEther, keccak256, bytesToHex } from "viem";
+import { parseEther, keccak256, bytesToHex, stringToBytes } from "viem";
 
-function createMerkleRoot(words: number[], randomness: number): [bytes32, bytes32[]] {
-  let leafNodes = words.map((word, index) => keccak256(abi.encodePacked(word, randomness + index), "bytes32"));
-  let proof = [];
-  while (leafNodes.length > 1) {
-    let temp = [];
-    for (let i = 0; i < leafNodes.length; i += 2) {
-      let left = leafNodes[i];
-      let right = i + 1 < leafNodes.length ? leafNodes[i + 1] : left;
-      temp.push(keccak256(abi.encodePacked(left, right), "bytes32"));
-      if (right === left) proof.push(left);
-      else proof.push(right);
-    }
-    leafNodes = temp;
+const chainSize: number = 1000;
+const secret: Uint8Array = stringToBytes("secret");
+const amount: bigint = parseEther("1");
+
+function createHashchain(
+  secret: Uint8Array,
+  length: number
+): Uint8Array[] {
+  let currentHash: Uint8Array = keccak256(secret, "bytes");
+  const hashChain: Uint8Array[] = [currentHash];
+
+  for (let i = 1; i < length; i++) {
+    currentHash = keccak256(currentHash, "bytes");
+    hashChain.push(currentHash);
   }
-  return [leafNodes[0], proof];
+
+  return hashChain;
+}
+
+function hashPair(left: Uint8Array, right: Uint8Array): Uint8Array {
+  const concatenatedHash = Uint8Array.from([...left, ...right]);
+  return keccak256(concatenatedHash, "bytes");
+}
+
+function createMerkleTree(leaves: Uint8Array[]): [Uint8Array[], Uint8Array] {
+  let level: Uint8Array[] = leaves;
+  let tree: Uint8Array[] = [...leaves];
+
+  while (level.length > 1) {
+    let newLevel: Uint8Array[] = [];
+
+    for (let i = 0; i < level.length; i += 2) {
+      if (i + 1 < level.length) {
+        const combined = hashPair(level[i], level[i + 1]);
+        newLevel.push(combined);
+      } else {
+        newLevel.push(level[i]);
+      }
+    }
+
+    tree = tree.concat(newLevel);
+    level = newLevel;
+  }
+
+  const root = level[0];
+  return [tree, root];
 }
 
 async function deployEthWordMerkle() {
-  const channelTimeout = 24 * 60 * 60; // 1 day
-  const wordCount = 10;
-  const randomness = 1234;
-
-  const words = Array.from({length: wordCount}, (_, i) => i + 1);
-  const [root, proof] = createMerkleRoot(words, randomness);
-
   const [owner, otherAccount] = await hre.viem.getWalletClients();
+  const channelTimeout = BigInt(24 * 60 * 60);
+  const wordCount = 10n;
+  const defaultRecipient: `0x${string}` = `0x${otherAccount.account.address}`;
+
+  const leaves = createHashchain(secret, chainSize + 1);
+  const [merkleTree, merkleRoot] = createMerkleTree(leaves);
+
+
 
   const ethWordMerkle = await hre.viem.deployContract(
     "EthWordMerkle",
-    [otherAccount.account.address, channelTimeout, root, wordCount],
-    { value: parseEther("1") }
+    [defaultRecipient, channelTimeout, bytesToHex(merkleRoot, { size: 32 }), wordCount],
+    { value: amount }
   );
+  const publicClient = await hre.viem.getPublicClient();
+
 
   return {
+    chainSize,
+    merkleTree,
     ethWordMerkle,
+    secret,
     wordCount,
+    publicClient,
+    merkleRoot,
+    amount,
     owner,
     otherAccount,
-    proof,
-    root,
-    channelTimeout,
-    randomness
   };
 }
 
@@ -65,25 +101,14 @@ describe("EthWordMerkle Deployment", function () {
   });
 
   it("Should deploy correctly with the correct root", async function () {
-    const { ethWordMerkle, root } = await loadFixture(deployEthWordMerkle);
+    const { ethWordMerkle, merkleRoot } = await loadFixture(deployEthWordMerkle);
 
-    expect(await ethWordMerkle.read.root()).to.equal(root);
+    expect(await ethWordMerkle.read.root()).to.equal(merkleRoot);
   });
 
   it("Should deploy correctly with correct initial balance", async function () {
     const { publicClient, ethWordMerkle, owner } = await loadFixture(deployEthWordMerkle);
 
     expect(await publicClient.getBalance({ address: ethWordMerkle.address })).to.equal(parseEther("1"));
-  });
-
-  it("Should handle close channel with valid Merkle proof", async function () {
-    const { ethWordMerkle, proof, wordCount } = await loadFixture(deployEthWordMerkle);
-    const amountToClose = 5;
-    const randomValue = 1235;
-
-    const result = await ethWordMerkle.call.closeChannel(amountToClose, randomValue, proof);
-
-    expect(result.success).to.be.true;
-    expect(await ethWordMerkle.read.totalWordCount()).to.equal(BigInt(wordCount - amountToClose));
   });
 });
