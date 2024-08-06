@@ -1,7 +1,6 @@
 import hre from "hardhat";
 import { parseEther, stringToBytes, keccak256, bytesToHex } from "viem";
 
-export const hashM = 100;
 const chainSize: number = 1000;
 const secret: Uint8Array = stringToBytes("secret");
 const amount: bigint = parseEther("1");
@@ -26,7 +25,7 @@ function hashPair(left: Uint8Array, right: Uint8Array): Uint8Array {
   return keccak256(concatenatedHash, "bytes");
 }
 
-function createMerkleTree(leaves: Uint8Array[]): [Uint8Array[], Uint8Array] {
+export function createMerkleTree(leaves: Uint8Array[]): [Uint8Array[], Uint8Array] {
   let level: Uint8Array[] = leaves;
   let tree: Uint8Array[] = [...leaves];
 
@@ -50,31 +49,35 @@ function createMerkleTree(leaves: Uint8Array[]): [Uint8Array[], Uint8Array] {
   return [tree, root];
 }
 
-
 export async function deployEthWordMerkle() {
   const [owner, otherAccount] = await hre.viem.getWalletClients();
-  const defaultRecipient = `0x${otherAccount.account.address}`;
-
+  const channelTimeout = BigInt(24 * 60 * 60);
+  const wordCount = 10n;
+  const defaultRecipient: `0x${string}` = `0x${otherAccount.account.address}`;
 
   const leaves = createHashchain(secret, chainSize + 1);
   const [merkleTree, merkleRoot] = createMerkleTree(leaves);
-  const wordCount = BigInt(chainSize);
+
+
 
   const ethWordMerkle = await hre.viem.deployContract(
     "EthWordMerkle",
-    [defaultRecipient, bytesToHex(merkleRoot, { size: 32 })],
+    [defaultRecipient, channelTimeout, bytesToHex(merkleRoot, { size: 32 }), wordCount],
     { value: amount }
   );
+  const publicClient = await hre.viem.getPublicClient();
+
 
   return {
     chainSize,
     merkleTree,
     ethWordMerkle,
     secret,
+    wordCount,
+    publicClient,
+    merkleRoot,
     amount,
     owner,
     otherAccount,
   };
 }
-
-

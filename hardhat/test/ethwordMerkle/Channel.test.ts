@@ -12,18 +12,19 @@ describe("EthWordMerkle", function () {
       chainSize,
       merkleTree,
       ethWordMerkle,
+      publicClient,
       secret,
       amount,
       owner,
       otherAccount
     } = await loadFixture(deployEthWordMerkle);
 
-    return { chainSize, merkleTree, ethWordMerkle, secret, amount, owner, otherAccount };
+    return { chainSize, merkleTree, ethWordMerkle, publicClient, secret, amount, owner, otherAccount };
   }
 
   describe("Channel balance", function () {
     it("Should close the channel after sending the full amount and set balance to 0", async function () {
-      const { chainSize, merkleTree, ethWordMerkle, otherAccount } = await deployFixture();
+      const { chainSize, merkleTree, ethWordMerkle, otherAccount, publicClient } = await deployFixture();
 
       await ethWordMerkle.write.closeChannel(
         [bytesToHex(merkleTree[0], { size: 32 }), BigInt(chainSize)],
