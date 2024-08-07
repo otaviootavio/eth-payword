@@ -53,7 +53,7 @@ export async function deployEthWordMerkle() {
   const [owner, otherAccount] = await hre.viem.getWalletClients();
   const channelTimeout = BigInt(24 * 60 * 60);
   const wordCount = 10n;
-  const defaultRecipient: `0x${string}` = `0x${otherAccount.account.address}`;
+  const defaultRecipient: `0x${string}` = otherAccount.account.address;
 
   const leaves = createHashchain(secret, chainSize + 1);
   const [merkleTree, merkleRoot] = createMerkleTree(leaves);

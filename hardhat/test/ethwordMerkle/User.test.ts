@@ -26,7 +26,7 @@ describe("EthWordMerkle", function() {
     const txResponseId = await ethWordMerkle.write.closeChannel(
       BigInt(1), 
       BigInt(0), 
-      proof.map(hash => `0x${bytesToHex(hash, { size: 32 })}`)
+      proof.map(hash => `0x${bytesToHex(hash, { size: 32 })}`),
       { account: otherAccount.account }
     );
 

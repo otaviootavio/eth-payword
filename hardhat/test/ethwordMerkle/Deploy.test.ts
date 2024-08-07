@@ -58,7 +58,8 @@ async function deployEthWordMerkle() {
   const [owner, otherAccount] = await hre.viem.getWalletClients();
   const channelTimeout = BigInt(24 * 60 * 60);
   const wordCount = 10n;
-  const defaultRecipient: `0x${string}` = `0x${otherAccount.account.address}`;
+  const defaultRecipient: `0x${string}` = otherAccount.account.address;
+  console.log(defaultRecipient)
 
   const leaves = createHashchain(secret, chainSize + 1);
   const [merkleTree, merkleRoot] = createMerkleTree(leaves);
@@ -90,6 +91,7 @@ async function deployEthWordMerkle() {
 describe("EthWordMerkle Deployment", function () {
   it("Should deploy correctly with the correct recipient", async function () {
     const { ethWordMerkle, otherAccount } = await loadFixture(deployEthWordMerkle);
+    console.log("AAA", await ethWordMerkle.read.channelRecipient())
 
     expect(await ethWordMerkle.read.channelRecipient()).to.equal(otherAccount.account.address);
   });
