@@ -4,7 +4,7 @@ import {
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
 import hre from "hardhat";
-import { parseEther, keccak256, bytesToHex, stringToBytes } from "viem";
+import { parseEther, keccak256, bytesToHex, stringToBytes, toBytes, pad } from "viem";
 
 const chainSize: number = 1000;
 const secret: Uint8Array = stringToBytes("secret");
@@ -59,20 +59,19 @@ async function deployEthWordMerkle() {
   const channelTimeout = BigInt(24 * 60 * 60);
   const wordCount = 10n;
   const defaultRecipient: `0x${string}` = otherAccount.account.address;
-  console.log(defaultRecipient)
+  console.log(defaultRecipient);
 
   const leaves = createHashchain(secret, chainSize + 1);
   const [merkleTree, merkleRoot] = createMerkleTree(leaves);
 
-
-
   const ethWordMerkle = await hre.viem.deployContract(
     "EthWordMerkle",
-    [defaultRecipient, channelTimeout, bytesToHex(merkleRoot, { size: 32 }), wordCount],
+    [defaultRecipient, channelTimeout, bytesToHex(merkleRoot), wordCount],
     { value: amount }
   );
-  const publicClient = await hre.viem.getPublicClient();
 
+  const publicClient = await hre.viem.getPublicClient();
+  console.log("fc do deploy ", bytesToHex(merkleRoot));
 
   return {
     chainSize,
@@ -81,7 +80,7 @@ async function deployEthWordMerkle() {
     secret,
     wordCount,
     publicClient,
-    merkleRoot,
+    merkleRoot: bytesToHex(merkleRoot),
     amount,
     owner,
     otherAccount,
@@ -91,9 +90,8 @@ async function deployEthWordMerkle() {
 describe("EthWordMerkle Deployment", function () {
   it("Should deploy correctly with the correct recipient", async function () {
     const { ethWordMerkle, otherAccount } = await loadFixture(deployEthWordMerkle);
-    console.log("AAA", await ethWordMerkle.read.channelRecipient())
 
-    expect(await ethWordMerkle.read.channelRecipient()).to.equal(otherAccount.account.address);
+    expect((await ethWordMerkle.read.channelRecipient()).toUpperCase()).to.equal(otherAccount.account.address.toUpperCase());
   });
 
   it("Should deploy correctly with the correct word count", async function () {
@@ -104,8 +102,9 @@ describe("EthWordMerkle Deployment", function () {
 
   it("Should deploy correctly with the correct root", async function () {
     const { ethWordMerkle, merkleRoot } = await loadFixture(deployEthWordMerkle);
+    console.log("fc do contrato ", await ethWordMerkle.read.root());
 
-    expect(await ethWordMerkle.read.root()).to.equal(merkleRoot);
+    expect((await ethWordMerkle.read.root()).toUpperCase()).to.equal(merkleRoot.toUpperCase());
   });
 
   it("Should deploy correctly with correct initial balance", async function () {

@@ -20,7 +20,7 @@ export function createHashchain(
   return hashChain;
 }
 
-function hashPair(left: Uint8Array, right: Uint8Array): Uint8Array {
+export function hashPair(left: Uint8Array, right: Uint8Array): Uint8Array {
   const concatenatedHash = Uint8Array.from([...left, ...right]);
   return keccak256(concatenatedHash, "bytes");
 }
@@ -54,19 +54,19 @@ export async function deployEthWordMerkle() {
   const channelTimeout = BigInt(24 * 60 * 60);
   const wordCount = 10n;
   const defaultRecipient: `0x${string}` = otherAccount.account.address;
+  console.log(defaultRecipient);
 
   const leaves = createHashchain(secret, chainSize + 1);
   const [merkleTree, merkleRoot] = createMerkleTree(leaves);
 
-
-
   const ethWordMerkle = await hre.viem.deployContract(
     "EthWordMerkle",
-    [defaultRecipient, channelTimeout, bytesToHex(merkleRoot, { size: 32 }), wordCount],
+    [defaultRecipient, channelTimeout, bytesToHex(merkleRoot), wordCount],
     { value: amount }
   );
-  const publicClient = await hre.viem.getPublicClient();
 
+  const publicClient = await hre.viem.getPublicClient();
+  console.log("fc do deploy ", bytesToHex(merkleRoot));
 
   return {
     chainSize,
@@ -75,7 +75,7 @@ export async function deployEthWordMerkle() {
     secret,
     wordCount,
     publicClient,
-    merkleRoot,
+    merkleRoot: bytesToHex(merkleRoot),
     amount,
     owner,
     otherAccount,
