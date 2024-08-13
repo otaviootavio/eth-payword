@@ -75,74 +75,10 @@
     "contract": "EthWord",
     "method": "closeChannel",
     "fnSig": "closeChannel(bytes32,uint256)",
-    "intrinsicGas": [
-     21728,
-     21716,
-     21716,
-     21728,
-     21716,
-     21716,
-     21728,
-     21728,
-     21716,
-     21716,
-     21728,
-     21716,
-     21716,
-     21728,
-     21728,
-     21716,
-     21716,
-     21716,
-     21716
-    ],
-    "callData": [
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0,
-     0
-    ],
-    "gasData": [
-     45868,
-     45868,
-     45868,
-     45868,
-     45868,
-     45868,
-     81886,
-     81886,
-     81886,
-     81886,
-     81886,
-     81886,
-     411024,
-     411024,
-     411024,
-     411024,
-     411024,
-     411024,
-     411024
-    ],
-    "numberOfCalls": 19,
-    "executionGasAverage": 191773,
-    "calldataGasAverage": 0,
-    "min": 45868,
-    "max": 411024
+    "intrinsicGas": [],
+    "callData": [],
+    "gasData": [],
+    "numberOfCalls": 0
    },
    "EthWord_4632508f": {
     "key": "4632508f",
@@ -199,12 +135,12 @@
     "gasData": [],
     "numberOfCalls": 0
    },
-   "EthWordMerkle_4aa4217f": {
-    "key": "4aa4217f",
+   "EthWordMerkle_c982e205": {
+    "key": "c982e205",
     "isCall": false,
     "contract": "EthWordMerkle",
     "method": "closeChannel",
-    "fnSig": "closeChannel(uint256,uint256,bytes32[])",
+    "fnSig": "closeChannel(uint256,bytes32,bytes32[])",
     "intrinsicGas": [],
     "callData": [],
     "gasData": [],
@@ -221,12 +157,12 @@
     "gasData": [],
     "numberOfCalls": 0
    },
-   "EthWordMerkle_d76970ba": {
-    "key": "d76970ba",
+   "EthWordMerkle_746fae12": {
+    "key": "746fae12",
     "isCall": true,
     "contract": "EthWordMerkle",
     "method": "simulateCloseChannel",
-    "fnSig": "simulateCloseChannel(uint256,uint256,bytes32[])",
+    "fnSig": "simulateCloseChannel(uint256,bytes32,bytes32[])",
     "intrinsicGas": [],
     "callData": [],
     "gasData": [],
@@ -258,51 +194,26 @@
   "deployments": [
    {
     "name": "EthWord",
-    "gasData": [
-     824823,
-     824823,
-     824823,
-     824823,
-     824823,
-     824823
-    ],
-    "callData": [
-     0,
-     0,
-     0,
-     0,
-     0,
-     0
-    ],
-    "executionGasAverage": 824823,
-    "calldataGasAverage": 0,
-    "min": 824823,
-    "max": 824823,
-    "percent": 2.7
+    "gasData": [],
+    "callData": []
    },
    {
     "name": "EthWordMerkle",
     "gasData": [
-     788838,
-     788838,
-     788838,
-     788838,
-     788838,
-     788838
+     798323,
+     798323,
+     798323
     ],
     "callData": [
      0,
      0,
-     0,
-     0,
-     0,
      0
     ],
-    "executionGasAverage": 788838,
+    "executionGasAverage": 798323,
     "calldataGasAverage": 0,
-    "min": 788838,
-    "max": 788838,
-    "percent": 2.6
+    "min": 798323,
+    "max": 798323,
+    "percent": 2.7
    },
    {
     "name": "MerkleProof",
