@@ -14,8 +14,8 @@ function App() {
         </header>
         <main className="flex-grow flex flex-col items-center justify-center p-4 w-full gap-10 pt-12">
           <HashChainExtensionProvider>
-            <DeployContract />
             <AccountInfo />
+            <DeployContract />
             <QuerySmartContract />
           </HashChainExtensionProvider>
         </main>

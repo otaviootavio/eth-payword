@@ -60,7 +60,7 @@ const TailInput: React.FC<TailInputProps> = ({ setTail, tail }) => {
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition flex w-auto items-center text-sm"
             onClick={handleFetchFromWallet}
           >
-            Fetch from wallet!
+            Fetch input from wallet!
           </button>
         </div>
       </div>
