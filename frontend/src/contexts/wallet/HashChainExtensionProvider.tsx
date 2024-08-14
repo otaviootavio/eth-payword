@@ -65,7 +65,6 @@ export const HashChainExtensionProvider: React.FC<
       type: string;
       data: { hash: string; index: number };
     }>("HashChain");
-    console.log(response.data);
     const newElement = HashChainElementSchema.parse({
       hash: response.data.hash,
       index: response.data.index,
@@ -88,7 +87,6 @@ export const HashChainExtensionProvider: React.FC<
     const response = await createEventPromise<{ type: string; data: string[] }>(
       "fullHashChain",
     );
-    console.log(response.data);
     setFullHashChain(response.data);
     return response.data;
   };

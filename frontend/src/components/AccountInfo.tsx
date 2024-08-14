@@ -1,51 +1,72 @@
+import React from "react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 
-const AccountInfo = () => {
-  const { connectors, connect, status, error } = useConnect();
-  const account = useAccount();
+const AccountInfo: React.FC = () => {
+  const { connect, connectors, error, isLoading, pendingConnector } =
+    useConnect();
+  const { address, isConnected, connector: activeConnector } = useAccount();
   const { disconnect } = useDisconnect();
 
+  const handleConnect = (connector: any) => {
+    connect({ connector });
+  };
+
+  const renderConnectWallet = () => (
+    <div>
+      <h2 className="text-2xl w-full font-bold text-gray-900 mb-4">
+        Connect Wallet
+      </h2>
+      <div className="flex flex-wrap gap-2">
+        {connectors.map((connector) => (
+          <button
+            key={connector.id}
+            onClick={() => handleConnect(connector)}
+            type="button"
+            className={`px-4 py-2 rounded transition ${
+              isLoading && connector.id === pendingConnector?.id
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-700 text-white"
+            }`}
+            disabled={isLoading && connector.id === pendingConnector?.id}
+          >
+            {connector.name}
+            {isLoading &&
+              connector.id === pendingConnector?.id &&
+              " (connecting)"}
+          </button>
+        ))}
+      </div>
+      {error && <div className="mt-4 text-red-500">{error.message}</div>}
+    </div>
+  );
+
+  const renderAccountInfo = () => (
+    <>
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        Account Information
+      </h2>
+      <div className="text-gray-700 space-y-2">
+        <div>
+          <span className="font-semibold">Address:</span> {address}
+        </div>
+        <div>
+          <span className="font-semibold">Connector:</span>{" "}
+          {activeConnector?.name || "None"}
+        </div>
+      </div>
+      <button
+        type="button"
+        className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700 transition"
+        onClick={() => disconnect()}
+      >
+        Disconnect
+      </button>
+    </>
+  );
+
   return (
-    <div className="p-6 w-1/2  mx-auto bg-white rounded-xl shadow-md space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900">Account</h2>
-      <div className="text-gray-700">
-        <div>
-          <span className="font-semibold">Status:</span> {account.status}
-        </div>
-        <div>
-          <span className="font-semibold">Addresses:</span>{" "}
-          {JSON.stringify(account.addresses)}
-        </div>
-        <div>
-          <span className="font-semibold">Chain ID:</span> {account.chainId}
-        </div>
-      </div>
-      {account.status === "connected" && (
-        <button
-          type="button"
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700 transition"
-          onClick={() => disconnect()}
-        >
-          Disconnect
-        </button>
-      )}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Connect</h2>
-        <div className="space-x-2 space-y-2 ">
-          {connectors.map((connector) => (
-            <button
-              key={connector.uid}
-              onClick={() => connect({ connector })}
-              type="button"
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition"
-            >
-              {connector.name}
-            </button>
-          ))}
-        </div>
-        <div className="mt-4 text-gray-500">{status}</div>
-        {error && <div className="mt-2 text-red-500">{error.message}</div>}
-      </div>
+    <div className="p-6 w-full max-w-2xl mx-auto bg-white rounded-xl shadow-md">
+      {isConnected ? renderAccountInfo() : renderConnectWallet()}
     </div>
   );
 };

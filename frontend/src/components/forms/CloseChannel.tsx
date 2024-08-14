@@ -48,7 +48,7 @@ export const CloseChannel: React.FC<CloseChannelProps> = ({ address }) => {
   const { fetchHashChain } = useHashChainFromExtension();
   const [fullHashChain, setFullHashChain] = useState<string[]>([]);
 
-  if (!address) return <div>Insert the contract address</div>;
+  if (!address) return;
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();

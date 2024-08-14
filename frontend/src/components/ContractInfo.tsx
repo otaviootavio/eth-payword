@@ -20,7 +20,7 @@ const ContractInfo: React.FC<ContractInfoProps> = ({ address }) => {
   const { data: totalWordCount } = useReadEthWordTotalWordCount({ address });
   const { data: balance } = useBalance({ address });
 
-  if (!address) return <div>Insert the contract address</div>;
+  if (!address) return;
   if (
     !channelRecipient ||
     !channelTip ||

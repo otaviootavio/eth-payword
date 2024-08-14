@@ -1,9 +1,11 @@
+import { useAccount } from "wagmi";
 import AccountInfo from "./components/AccountInfo";
 import DeployContract from "./components/DeployContract";
 import QuerySmartContract from "./components/QuerySmartContract";
 import { HashChainExtensionProvider } from "./contexts/wallet/HashChainExtensionProvider";
 
 function App() {
+  const { address } = useAccount();
   return (
     <>
       <div className="min-h-screen bg-gray-100 flex flex-col items-center">
@@ -12,11 +14,15 @@ function App() {
             buyHashchain
           </div>
         </header>
-        <main className="flex-grow flex flex-col items-center justify-center p-4 w-full gap-10 pt-12">
+        <main className="flex-grow flex flex-col items-start justify-start p-4 gap-10 pt-12">
           <HashChainExtensionProvider>
             <AccountInfo />
-            <DeployContract />
-            <QuerySmartContract />
+            {address && (
+              <>
+                <DeployContract />
+                <QuerySmartContract />
+              </>
+            )}
           </HashChainExtensionProvider>
         </main>
       </div>
