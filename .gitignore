@@ -1,0 +1,4 @@
+hardhat/gas_data.csv
+hardhat/package-lock.json
+frontend/package-lock.json
+frontend/yarn.lock

@@ -1,18 +1,33 @@
 import { useState } from "react";
-import { BinaryValidator } from "./BinaryValidator";
-import { BigIntInput } from "./BigIntInput";
 import {
+  useReadEthWordChannelSender,
+  useReadEthWordChannelTip,
   useReadEthWordSimulateCloseChannel,
+  useReadEthWordTotalWordCount,
   useWriteEthWordCloseChannel,
 } from "../../generated";
-import { useAccount } from "wagmi";
+import { useAccount, useBalance } from "wagmi";
 import { formatEther } from "viem";
+import { useHashChain } from "../../contexts/wallet/HashChainExtensionProvider";
+import HashchainInput from "../HashchainInput";
 
-export function CloseChannel() {
-  const address = import.meta.env.VITE_CONTRACT_ADDRESS;
+interface CloseChannelProps {
+  address: `0x${string}` | undefined;
+}
+
+export const CloseChannel: React.FC<CloseChannelProps> = ({ address }) => {
   const account = useAccount();
-  const [hexValue, setHexValue] = useState<`0x${string}`>("0x0");
+  const [hexValue, setHexValue] = useState<string>("0x0");
   const [bigIntValue, setBigIntValue] = useState<bigint>(0n);
+
+  const { refetch: refetchChannelTip } = useReadEthWordChannelTip({ address });
+  const { refetch: refetchChannelSender } = useReadEthWordChannelSender({
+    address,
+  });
+  const { refetch: refetchTotalWordCount } = useReadEthWordTotalWordCount({
+    address,
+  });
+  const { refetch: refetchBalance } = useBalance({ address });
 
   const {
     writeContractAsync,
@@ -20,7 +35,21 @@ export function CloseChannel() {
     error: errorWrite,
   } = useWriteEthWordCloseChannel();
 
-  const handleSubmit = (event: { preventDefault: () => void }) => {
+  const {
+    data,
+    status: statusEth,
+    error: errorEth,
+  } = useReadEthWordSimulateCloseChannel({
+    address,
+    args: [hexValue as `0x${string}`, bigIntValue as bigint],
+    account: account.address,
+  });
+
+  const { hashChainElements, fetchHashChain } = useHashChain();
+
+  if (!address) return <div>Insert the contract address</div>;
+
+  const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
     if (data) {
       // TODO
@@ -28,40 +57,79 @@ export function CloseChannel() {
       // send error to fix the error
       if (data[1]) {
         // send the transaction
-        writeContractAsync({
+        await writeContractAsync({
           address,
-          args: [hexValue, bigIntValue],
+          args: [hexValue as `0x${string}`, bigIntValue as bigint],
           account: account.address,
         });
+        refetchChannelSender();
+        refetchBalance();
+        refetchChannelTip();
+        refetchTotalWordCount();
       } else {
         // show error
       }
     }
   };
 
-  const {
-    data,
-    status: statusEth,
-    error: errorEth,
-  } = useReadEthWordSimulateCloseChannel({
-    address,
-    args: [hexValue, bigIntValue],
-    account: account.address,
-  });
+  const handleFetchHashChain = async () => {
+    fetchHashChain();
+    if (hashChainElements.length > 0) {
+      const lastElement = hashChainElements[hashChainElements.length - 1];
+      setHexValue(lastElement.data as `0x${string}`);
+      setBigIntValue(BigInt(lastElement.index));
+    }
+    console.log(hashChainElements);
+  };
 
   return (
-    <div>
-      <p>{statusEth}</p>
-      <p>{errorEth?.message}</p>
-      <p>Does it works?: {data && data[0] ? "Yes!!" : "Noo"}</p>
-      <p>Balance? {data && formatEther(data[1])}</p>
-      <p>{statusWrite}</p>
-      <p>{errorWrite?.message}</p>
-      <form onSubmit={handleSubmit}>
-        <BinaryValidator onValid={setHexValue} />
-        <BigIntInput onBigIntChange={setBigIntValue} />
-        <input type="submit" value="Gooo!" />
+    <div className="p-6 mx-auto bg-white space-y-4">
+      <div className="flex flex-row gap-2 justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Close Channel</h2>
+        </div>
+        <div>
+          <button
+            onClick={handleFetchHashChain}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition flex w-auto items-center text-sm"
+          >
+            Fetch from wallet!
+          </button>
+        </div>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <HashchainInput
+          setHashchainIndex={setBigIntValue}
+          setHashchainItem={setHexValue}
+          hashchainIndex={bigIntValue}
+          hashchainItem={hexValue}
+        />
+        <input
+          type="submit"
+          value="Gooo!"
+          className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-900 font-bold transition"
+        />
       </form>
+      <p className="text-gray-900 font-bold">
+        Status: <span className="font-normal">{statusEth}</span>
+      </p>
+      <p className="text-red-500">{errorEth?.message}</p>
+      <p className="text-gray-900 font-bold">
+        Does it work?:{" "}
+        {data && data[0] ? (
+          <span className="font-normal text-blue-700">Yes!!</span>
+        ) : (
+          <span className="font-normal text-red-700">Noo!</span>
+        )}
+      </p>
+      <p className="text-gray-900 font-bold">
+        Balance:
+        <span className="font-normal">{data && formatEther(data[1])}</span>
+      </p>
+      <p className="text-gray-900 font-bold">
+        Write Status: <span className="font-normal">{statusWrite}</span>
+      </p>
+      <p className="text-red-500">{errorWrite?.message}</p>
     </div>
   );
-}
+};

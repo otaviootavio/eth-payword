@@ -13,7 +13,7 @@ function run_test_and_capture() {
     sed -i "s/const chainSize: number = [0-9_]\+;/const chainSize: number = ${hash_amount};/" test/utils/deployEthWord.ts
 
     # Run the Hardhat test
-    npx hardhat test test/ethword/CloseChannel.test.ts --network localhost
+    npx hardhat test test/ethword/CloseChannel.test.ts
 
     # Check if out.json is created successfully
     if [ -f "./out.json" ]; then
