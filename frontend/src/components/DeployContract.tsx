@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BigIntInput } from "./forms/BigIntInput";
 import SmartContractInput from "./SmartContractInput";
 import TailInput from "./TailInput";
+import { useHashChainFromExtension } from "../contexts/wallet/HashChainExtensionProvider";
 
 const DeployContract = () => {
   const [amountEth, setAmountEth] = useState<bigint>(0n);
@@ -9,13 +10,26 @@ const DeployContract = () => {
   const [toAddress, setToAddress] = useState<`0x${string}`>("0x0");
   const [tail, setTail] = useState<string>("0x0");
 
+  const { fetchHashChain } = useHashChainFromExtension();
+
+  const fetchDataFromExtension = async () => {
+    const hashChain = await fetchHashChain();
+    setTail(hashChain[hashChain.length - 1]);
+    setNumberOfTokens(hashChain.length);
+  };
   return (
-    <div className="p-6 w-1/2  mx-auto bg-white rounded-xl shadow-md space-y-4">
+    <div className="p-6 mx-auto bg-white rounded-xl shadow-md space-y-4">
       <div className="flex flex-col gap-1">
         <div className="flex flex-row gap-1 justify-between">
           <h2 className="text-2xl font-bold text-gray-900">
             Deploy smart contract
           </h2>
+          <button
+            onClick={fetchDataFromExtension}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition flex w-auto items-center text-sm"
+          >
+            Fetch hash chain from extension!
+          </button>
         </div>
         <div>
           <label className="text-gray-700">To address:</label>
@@ -36,7 +50,8 @@ const DeployContract = () => {
             type="number"
             className="bg-white border border-gray-300 rounded-md p-2 w-full text-gray-700"
             placeholder="Binary Validator"
-            onChange={(e) => setNumberOfTokens(Number(e.target.value))}
+            onChange={(e) => setNumberOfTokens(e.target.valueAsNumber)}
+            value={numersOfToken}
           />
         </div>
         <div>

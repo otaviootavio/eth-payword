@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Solc } from "solc-browserify";
 import { useDeployContract } from "wagmi";
-import { Abi } from "abitype";
-import { type Address, type Hash, parseEther } from "viem";
+import { type Abi, type Address, type Hash, parseEther } from "viem";
 import { config } from "../wagmi";
 import { waitForTransactionReceipt } from "wagmi/actions";
 
@@ -21,11 +20,15 @@ const SmartContractInput: React.FC<SmartConractProps> = ({
 }) => {
   const [byteCode, setByteCode] = useState("");
   const [abi, setAbi] = useState<Abi>();
-  const { deployContractAsync } = useDeployContract();
+  const { deployContractAsync, status, error } = useDeployContract();
   const [contractAddress, setContractAddress] = useState<Address>();
+  const [isCompiling, setIsCompiling] = useState(false);
 
   const deployContract = async () => {
-    if (!abi) return;
+    if (!abi) {
+      console.log("abi is not defined");
+      return;
+    }
     const newTxHash: Hash = await deployContractAsync({
       abi: abi,
       bytecode: `0x${byteCode}`,
@@ -44,6 +47,7 @@ const SmartContractInput: React.FC<SmartConractProps> = ({
   };
 
   async function compileSourceCode() {
+    setIsCompiling(true);
     const contract = `// SPDX-License-Identifier: UNLICENSED
       pragma solidity ^0.8.19;
 
@@ -144,6 +148,7 @@ const SmartContractInput: React.FC<SmartConractProps> = ({
 
     setByteCode(outBytecode);
     setAbi(outAbi);
+    setIsCompiling(false);
   }
 
   return (
@@ -156,18 +161,32 @@ const SmartContractInput: React.FC<SmartConractProps> = ({
           Compile
         </button>
       </div>
-      {!!byteCode && (
-        <div>
-          <button
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-blue-700 transition"
-            onClick={deployContract}
-          >
-            Deploy!
-          </button>
-        </div>
+      <div>
+        {isCompiling ? (
+          <div className="flex flex-row gap-2 justify-between items-center">
+            <div className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-blue-700 transition">
+              Compiling...
+            </div>
+          </div>
+        ) : (
+          !!byteCode && (
+            <button
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-blue-700 transition"
+              onClick={deployContract}
+            >
+              Deploy!
+            </button>
+          )
+        )}
+      </div>
+      {status === "pending" && (
+        <div className="text-gray-900">Deploying...</div>
       )}
-      {!!contractAddress && (
+      {status === "success" && !!contractAddress && (
         <div className="text-gray-900">{contractAddress}</div>
+      )}
+      {status === "error" && (
+        <div className="text-red-500">{error?.message}</div>
       )}
     </div>
   );

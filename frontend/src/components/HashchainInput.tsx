@@ -1,71 +1,18 @@
 import React, { useState } from "react";
-import { z } from "zod";
-import { useHashChain } from "../contexts/wallet/HashChainExtensionProvider";
-
-// Schema to validate a hexadecimal hash string
-const hashSchema = z
-  .string()
-  .regex(/^0x[a-fA-F0-9]{64}$/, "Invalid hexadecimal hash");
-
-// Schema to validate a bigint
-const indexSchema = z.bigint().refine((value) => value >= 0n, {
-  message: "Index must be a non-negative bigint",
-});
 
 interface HashchainInputProps {
-  setHashchainIndex: (value: bigint) => void;
-  setHashchainItem: (value: string) => void;
-  hashchainIndex: bigint;
-  hashchainItem: string;
+  fullHashChain: string[];
+  setBigIntValue: React.Dispatch<React.SetStateAction<bigint>>;
+  setHexValue: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const HashchainInput: React.FC<HashchainInputProps> = ({
-  setHashchainIndex,
-  setHashchainItem,
-  hashchainIndex,
-  hashchainItem,
+  fullHashChain,
+  setBigIntValue,
+  setHexValue,
 }) => {
-  const { sendH100Once, h100 } = useHashChain();
-  const [errorIndex, setErrorIndex] = useState<string>("");
-  const [errorHash, setErrorHash] = useState<string>("");
-
-  const handleIndexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    try {
-      const parsedValue = BigInt(newValue);
-      indexSchema.parse(parsedValue);
-      setErrorIndex("");
-      setHashchainIndex(parsedValue);
-    } catch (e: any) {
-      setErrorIndex(e.errors[0].message);
-    }
-  };
-
-  const handleHashChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setHashchainItem(newValue);
-
-    try {
-      hashSchema.parse(newValue);
-      setErrorHash("");
-      setHashchainItem(newValue);
-    } catch (e: any) {
-      setErrorHash(e.errors[0].message);
-    }
-  };
-
-  const handleFetchFromWallet = () => {
-    sendH100Once();
-    if (h100) {
-      try {
-        hashSchema.parse(h100);
-        setErrorHash("");
-        setHashchainItem(h100);
-      } catch (e: any) {
-        setErrorHash(e.errors[0].message);
-      }
-    }
-  };
+  const [hashIndex, setHashIndex] = useState<number>(100);
+  const [hashItem, setHashItem] = useState<string>("");
 
   return (
     <>
@@ -73,29 +20,37 @@ const HashchainInput: React.FC<HashchainInputProps> = ({
       <div className="flex flex-row gap-2 justify-between items-center">
         <div className="grow">
           <input
-            type="text"
-            className={`bg-white border rounded-md p-2 w-full text-gray-700 ${errorIndex ? "border-red-500" : "border-gray-300"}`}
+            type="number"
+            className={`bg-white border rounded-md p-2 w-full text-gray-700 `}
             placeholder="Enter hashchain index"
-            value={hashchainIndex.toString()}
-            onChange={handleIndexChange}
+            onChange={(e) => {
+              setHashItem(fullHashChain[e.target.valueAsNumber - 1]);
+              setHashIndex(
+                fullHashChain.indexOf(fullHashChain[e.target.valueAsNumber]),
+              );
+              setBigIntValue(
+                BigInt(fullHashChain.length - e.target.valueAsNumber - 1),
+              );
+              setHexValue(fullHashChain[e.target.valueAsNumber]);
+              console.log(fullHashChain.length - e.target.valueAsNumber - 1);
+              console.log(fullHashChain[e.target.valueAsNumber]);
+            }}
+            value={hashIndex}
           />
         </div>
       </div>
-      {errorIndex && <p className="text-red-500 text-sm mt-1">{errorIndex}</p>}
 
       <label className="text-gray-700">Hashchain Item</label>
       <div className="flex flex-row gap-2 justify-between items-center">
         <div className="grow">
           <input
             type="text"
-            className={`bg-white border rounded-md p-2 w-full text-gray-700 ${errorHash ? "border-red-500" : "border-gray-300"}`}
+            className={`bg-white border text-gray-800 rounded-md p-2 w-full}`}
             placeholder="0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
-            value={hashchainItem}
-            onChange={handleHashChange}
+            value={hashItem}
           />
         </div>
       </div>
-      {errorHash && <p className="text-red-500 text-sm mt-1">{errorHash}</p>}
     </>
   );
 };

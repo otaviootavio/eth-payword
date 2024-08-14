@@ -8,8 +8,8 @@ import {
 } from "../../generated";
 import { useAccount, useBalance } from "wagmi";
 import { formatEther } from "viem";
-import { useHashChain } from "../../contexts/wallet/HashChainExtensionProvider";
 import HashchainInput from "../HashchainInput";
+import { useHashChainFromExtension } from "../../contexts/wallet/HashChainExtensionProvider";
 
 interface CloseChannelProps {
   address: `0x${string}` | undefined;
@@ -45,9 +45,10 @@ export const CloseChannel: React.FC<CloseChannelProps> = ({ address }) => {
     account: account.address,
   });
 
-  const { hashChainElements, fetchHashChain } = useHashChain();
+  const { fetchHashChain } = useHashChainFromExtension();
+  const [fullHashChain, setFullHashChain] = useState<string[]>([]);
 
-  if (!address) return <div>Insert the contract address</div>;
+  if (!address) return;
 
   const handleSubmit = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
@@ -73,13 +74,9 @@ export const CloseChannel: React.FC<CloseChannelProps> = ({ address }) => {
   };
 
   const handleFetchHashChain = async () => {
-    fetchHashChain();
-    if (hashChainElements.length > 0) {
-      const lastElement = hashChainElements[hashChainElements.length - 1];
-      setHexValue(lastElement.data as `0x${string}`);
-      setBigIntValue(BigInt(lastElement.index));
-    }
-    console.log(hashChainElements);
+    const hashChain = await fetchHashChain();
+    setFullHashChain(hashChain);
+    setBigIntValue(BigInt(hashChain.length - 1));
   };
 
   return (
@@ -93,16 +90,15 @@ export const CloseChannel: React.FC<CloseChannelProps> = ({ address }) => {
             onClick={handleFetchHashChain}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition flex w-auto items-center text-sm"
           >
-            Fetch from wallet!
+            Fetch hash chain from wallet!
           </button>
         </div>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <HashchainInput
-          setHashchainIndex={setBigIntValue}
-          setHashchainItem={setHexValue}
-          hashchainIndex={bigIntValue}
-          hashchainItem={hexValue}
+          setBigIntValue={setBigIntValue}
+          setHexValue={setHexValue}
+          fullHashChain={fullHashChain}
         />
         <input
           type="submit"

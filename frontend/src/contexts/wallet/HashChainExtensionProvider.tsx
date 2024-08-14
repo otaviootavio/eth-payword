@@ -1,72 +1,147 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { z } from "zod";
+import {
+  HashChainElementSchema,
+  SecretLengthSchema,
+} from "../../utils/zod-schemas";
 
-interface HashChainContextType {
-  hashChainElements: { data: string; index: number }[];
-  h100: string;
-  fetchHashChain: () => void;
-  sendH100Once: () => void;
+export interface HashChainElement {
+  hash: string;
+  index: number;
+}
+
+export interface HashChainExtensionContextType {
+  hashChainElements: HashChainElement[];
+  tail: string;
+  fullHashChain: string[];
+  secret: string;
+  length: number;
+  fetchAndPopHashFromHashChain: () => Promise<HashChainElement>;
+  fetchTail: () => Promise<string>;
+  fetchHashChain: () => Promise<string[]>;
+  fetchSecretAndLength: () => Promise<{
+    secret: string;
+    length: number;
+    tail: string;
+  }>;
 }
 
 interface HashChainExtensionProviderProps {
   children: ReactNode;
 }
 
-const HashChainContext = createContext<HashChainContextType | undefined>(
-  undefined,
-);
+const HashchainFromExtensionContext = createContext<
+  HashChainExtensionContextType | undefined
+>(undefined);
 
 export const HashChainExtensionProvider: React.FC<
   HashChainExtensionProviderProps
 > = ({ children }) => {
   const [hashChainElements, setHashChainElements] = useState<
-    { data: string; index: number }[]
+    z.infer<typeof HashChainElementSchema>[]
   >([]);
-  const [h100, setH100] = useState<string>("");
+  const [tail, setTail] = useState<string>("");
+  const [fullHashChain, setFullHashChain] = useState<string[]>([]);
+  const [secret, setSecret] = useState<string>("");
+  const [length, setLength] = useState<number>(0);
 
-  const handleResponse = (event: MessageEvent) => {
-    if (event.data.type === "HashChain") {
-      setHashChainElements((prev) => [
-        ...prev,
-        { data: event.data.data, index: event.data.index },
-      ]);
-    } else if (event.data.type === "Recover_h(100)") {
-      setH100(event.data.data);
+  const createEventPromise = <T,>(eventType: string): Promise<T> => {
+    return new Promise((resolve) => {
+      const handler = (event: MessageEvent) => {
+        if (event.data.type === eventType) {
+          window.removeEventListener("message", handler);
+          resolve(event.data as T);
+        }
+      };
+      window.addEventListener("message", handler);
+    });
+  };
+
+  const fetchAndPopHashFromHashChain = async (): Promise<
+    z.infer<typeof HashChainElementSchema>
+  > => {
+    window.postMessage({ type: "RequestHashChain" }, "*");
+    const response = await createEventPromise<{
+      type: string;
+      data: { hash: string; index: number };
+    }>("HashChain");
+    const newElement = HashChainElementSchema.parse({
+      hash: response.data.hash,
+      index: response.data.index,
+    });
+    setHashChainElements((prev) => [...prev, newElement]);
+    return newElement;
+  };
+
+  const fetchTail = async (): Promise<string> => {
+    window.postMessage({ type: "Send_h(100)" }, "*");
+    const response = await createEventPromise<{ type: string; data: string }>(
+      "Recover_h(100)",
+    );
+    setTail(response.data);
+    return response.data;
+  };
+
+  const fetchHashChain = async (): Promise<string[]> => {
+    window.postMessage({ type: "RequestFullHashChain" }, "*");
+    const response = await createEventPromise<{ type: string; data: string[] }>(
+      "fullHashChain",
+    );
+    setFullHashChain(response.data);
+    return response.data;
+  };
+
+  const fetchSecretAndLength = async (): Promise<
+    z.infer<typeof SecretLengthSchema>
+  > => {
+    window.postMessage({ type: "RequestSecretLength" }, "*");
+    try {
+      const response = await createEventPromise<{
+        type: string;
+        data: {
+          secret: string;
+          length: number;
+          tail: string;
+        };
+      }>("SecretLength");
+      const validatedResponse = SecretLengthSchema.parse({
+        secret: response.data.secret,
+        length: response.data.length,
+        tail: response.data.tail,
+      });
+      setSecret(validatedResponse.secret);
+      setLength(validatedResponse.length);
+      return validatedResponse;
+    } catch (error) {
+      console.error("Error in fetchSecretLength:", error);
+      throw error;
     }
   };
 
-  useEffect(() => {
-    window.addEventListener("message", handleResponse);
-    return () => window.removeEventListener("message", handleResponse);
-  }, []);
-
-  const fetchHashChain = () => {
-    window.postMessage({ type: "RequestHashChain" }, "*");
-  };
-
-  const sendH100Once = () => {
-    window.postMessage({ type: "Send_h(100)" }, "*");
+  const contextValue: HashChainExtensionContextType = {
+    hashChainElements,
+    tail,
+    fullHashChain,
+    secret,
+    length,
+    fetchAndPopHashFromHashChain,
+    fetchTail,
+    fetchHashChain,
+    fetchSecretAndLength,
   };
 
   return (
-    <HashChainContext.Provider
-      value={{ hashChainElements, h100, fetchHashChain, sendH100Once }}
-    >
+    <HashchainFromExtensionContext.Provider value={contextValue}>
       {children}
-    </HashChainContext.Provider>
+    </HashchainFromExtensionContext.Provider>
   );
 };
 
-export const useHashChain = () => {
-  const context = useContext(HashChainContext);
+export const useHashChainFromExtension = () => {
+  const context = useContext(HashchainFromExtensionContext);
   if (context === undefined) {
     throw new Error(
-      "useHashChain must be used within a HashChainExtensionProvider",
+      "useHashChainFromExtension must be used within a HashChainExtensionProvider",
     );
   }
   return context;

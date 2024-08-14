@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { z } from "zod";
-import { useHashChain } from "../contexts/wallet/HashChainExtensionProvider";
 
 // Adjust the regex to validate a hexadecimal hash string
 const tailSchema = z
@@ -13,7 +12,6 @@ interface TailInputProps {
 }
 
 const TailInput: React.FC<TailInputProps> = ({ setTail, tail }) => {
-  const { sendH100Once, h100 } = useHashChain();
   const [error, setError] = useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,19 +27,6 @@ const TailInput: React.FC<TailInputProps> = ({ setTail, tail }) => {
     }
   };
 
-  const handleFetchFromWallet = () => {
-    sendH100Once();
-    if (h100) {
-      try {
-        tailSchema.parse(h100);
-        setError("");
-        setTail(h100);
-      } catch (e: any) {
-        setError(e.errors[0].message);
-      }
-    }
-  };
-
   return (
     <>
       <label className="text-gray-700">Tail</label>
@@ -54,14 +39,6 @@ const TailInput: React.FC<TailInputProps> = ({ setTail, tail }) => {
             value={tail}
             onChange={handleChange}
           />
-        </div>
-        <div>
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 transition flex w-auto items-center text-sm"
-            onClick={handleFetchFromWallet}
-          >
-            Fetch from wallet!
-          </button>
         </div>
       </div>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}

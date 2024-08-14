@@ -2,3 +2,5 @@ hardhat/gas_data.csv
 hardhat/package-lock.json
 frontend/package-lock.json
 frontend/yarn.lock
+hardhat/pnpm-lock.yaml
+frontend/pnpm-lock.yaml
