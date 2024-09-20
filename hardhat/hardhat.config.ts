@@ -1,7 +1,7 @@
 import { HardhatUserConfig, vars } from "hardhat/config";
-import "@nomicfoundation/hardhat-viem";
-import "@nomicfoundation/hardhat-ignition";
-import "hardhat-gas-reporter";
+import "@nomicfoundation/hardhat-toolbox-viem";
+import "@nomicfoundation/hardhat-ignition-viem";
+// import "hardhat-gas-reporter";
 
 // const ALCHEMY_API_KEY = vars.get("ALCHEMY_API_KEY");
 // const PRIVATE_KEY = vars.get("PRIVATE_KEY");
