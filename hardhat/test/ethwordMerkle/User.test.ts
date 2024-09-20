@@ -1,18 +1,16 @@
 import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { bytesToHex } from "viem";
-import { deployEthWordMerkle, createMerkleTree, createHashchain } from "../utils/deployEthWordMerkle";
+import {
+  deployEthWordMerkle,
+  createMerkleTree,
+  createHashchain,
+} from "../utils/deployEthWordMerkle";
 
-describe("EthWordMerkle", function() {
-  it("Should close the channel with valid Merkle proof and withdraw correctly", async function() {
-    const {
-      ethWordMerkle,
-      publicClient,
-      otherAccount,
-      amount,
-      chainSize,
-      secret,
-    } = await loadFixture(deployEthWordMerkle);
+describe("EthWordMerkle", function () {
+  it("Should close the channel with valid Merkle proof and withdraw correctly", async function () {
+    const { ethWordMerkle, publicClient, otherAccount, chainSize, secret } =
+      await loadFixture(deployEthWordMerkle);
 
     const initialOtherBalance = await publicClient.getBalance({
       address: otherAccount.account.address,
@@ -20,13 +18,15 @@ describe("EthWordMerkle", function() {
 
     const leaves = createHashchain(secret, chainSize + 1);
     const [merkleTree, merkleRoot] = createMerkleTree(leaves);
-    const proofIndex = chainSize - 1; 
-    const proof = merkleTree.slice(proofIndex, proofIndex + 1); 
+    const proofIndex = chainSize - 1;
+    const proof = merkleTree.slice(proofIndex, proofIndex + 1);
+    const proofAsBytes = proof.map((hash) => bytesToHex(hash, { size: 32 }));
 
+    const amount = BigInt(1);
+    const hashChainItem = bytesToHex(leaves[proofIndex], { size: 32 });
     const txResponseId = await ethWordMerkle.write.closeChannel(
-      BigInt(1), 
-      BigInt(0), 
-      proof.map(hash => `0x${bytesToHex(hash, { size: 32 })}`),
+      [amount, hashChainItem, proofAsBytes],
+
       { account: otherAccount.account }
     );
 
