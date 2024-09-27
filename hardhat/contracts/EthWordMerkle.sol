@@ -36,24 +36,15 @@ contract EthWordMerkle {
             msg.sender == channelRecipient,
             "Only the channel recipient can close the channel."
         );
-
-        // Compute hash of (secret + index)
-        bytes32 computedHash = keccak256(abi.encodePacked(index, secret));
-
-        // Assert if this hash matches with the last item of the merkle tree
-        require(computedHash == proof[0], "Invalid secret or index");
-
         // Validate the merkle proof
-        bool isValid = validateMerkleProof(proof);
+        bool isValid = verify(proof, root, secret);
         require(isValid, "Invalid Merkle proof.");
 
         // If we've reached here, the data is valid. Proceed with channel closure
-        uint256 amountToWithdraw = calculateWithdrawAmount(index);
+        uint256 amountToWithdraw = calculateWithdrawAmount(index + 1);
 
         (bool success, ) = channelRecipient.call{value: amountToWithdraw}("");
         require(success, "Transfer failed.");
-
-        totalWordCount = totalWordCount - index;
     }
 
     function simulateCloseChannel(
@@ -75,7 +66,7 @@ contract EthWordMerkle {
         }
 
         // Validate the merkle proof
-        bool isValid = validateMerkleProof(proof);
+        bool isValid = verify(proof, root, keccak256(abi.encodePacked(secret)));
         if (!isValid) {
             return (false, 0);
         }
@@ -84,34 +75,31 @@ contract EthWordMerkle {
         return (true, amountToWithdraw);
     }
 
-    function validateMerkleProof(
-        bytes32[] calldata proof
-    ) private view returns (bool) {
-        bytes32 computedHash = proof[0];
-        console.log("Initial computed hash:");
-        console.logBytes32(computedHash);
+    function verify(
+        bytes32[] calldata _proof,
+        bytes32 _root,
+        bytes32 _leaf
+    ) public pure returns (bool) {
+        bytes32 computedHash = _leaf;
 
-        for (uint256 i = 1; i < proof.length; i++) {
-            bytes32 proofElement = proof[i];
-            console.log("Proof element %d:", i);
-            console.logBytes32(proofElement);
+        for (uint256 i = 0; i < _proof.length; i++) {
+            bytes32 proofElement = _proof[i];
 
-            computedHash = keccak256(
-                abi.encodePacked(computedHash, proofElement)
-            );
-            console.log("Computed hash after element %d:", i);
-            console.logBytes32(computedHash);
+            if (computedHash <= proofElement) {
+                // Hash(current computed hash + current element of the proof)
+                computedHash = keccak256(
+                    abi.encodePacked(computedHash, proofElement)
+                );
+            } else {
+                // Hash(current element of the proof + current computed hash)
+                computedHash = keccak256(
+                    abi.encodePacked(proofElement, computedHash)
+                );
+            }
         }
 
-        console.log("Final computed hash:");
-        console.logBytes32(computedHash);
-        console.log("Root:");
-        console.logBytes32(root);
-
-        bool isValid = computedHash == root;
-        console.log("Is valid: %s", isValid ? "true" : "false");
-
-        return isValid;
+        // Check if the computed hash (root) is equal to the provided root
+        return computedHash == _root;
     }
 
     function calculateWithdrawAmount(
