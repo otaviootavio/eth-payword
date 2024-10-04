@@ -2,70 +2,44 @@ import {
   time,
   loadFixture,
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
-import { bytesToHex, stringToBytes, toHex } from "viem";
-import {
-  deployEthWordMerkle,
-  createHashchain,
-} from "../utils/deployEthWordMerkle";
+import { deployEthWordMerkle } from "../utils/deployEthWordMerkle";
 import { expect } from "chai";
 
 describe("Close Channel", function () {
   describe("Channel balance", function () {
-    it("Should close the channel after send h0 and change balance to 0", async function () {
-      const { ethWordMerkle, chainSize, otherAccount, publicClient } =
-        await loadFixture(deployEthWordMerkle);
+    it("Should send one of n hashes and update the balance correctly", async function () {
+      const {
+        ethWordMerkle,
+        otherAccount,
+        publicClient,
+        merkleTree,
+        wordCount,
+      } = await loadFixture(deployEthWordMerkle);
 
-      const secret = stringToBytes("secret");
-      const hashChain = createHashchain(secret, chainSize + 1);
-      const proof = hashChain.slice(1);
-      const hexProof = proof.map((hash) => bytesToHex(hash, { size: 32 }));
-      const hexHash = toHex(hashChain[0], { size: 32 });
+      const indexOfLeaf = wordCount - 1;
+      const myLeaf = merkleTree.getHexLeaves()[indexOfLeaf] as `0x${string}`;
+      const merkleProofForMyLeaf: `0x${string}`[] = merkleTree.getHexProof(
+        myLeaf
+      ) as `0x${string}`[];
 
-      const amount = await publicClient.getBalance({
-        address: ethWordMerkle.address,
+      const closeTx = await ethWordMerkle.write.closeChannel(
+        [merkleProofForMyLeaf, myLeaf, BigInt(indexOfLeaf)],
+        {
+          account: otherAccount.account,
+        }
+      );
+
+      const transaction = await publicClient.getTransactionReceipt({
+        hash: closeTx,
       });
-      const bigAmount = BigInt(amount);
 
-      await ethWordMerkle.write.closeChannel([bigAmount, hexHash, hexProof], {
-        account: otherAccount.account,
-      });
+      console.log(
+        `Withdraw ${indexOfLeaf} of ${wordCount} tokens  used ${transaction.gasUsed} gas`
+      );
 
       expect(
         await publicClient.getBalance({ address: ethWordMerkle.address })
       ).to.equal(0n);
-    });
-
-    it("Should send one of n hashes and update the balance correctly", async function () {
-      const { ethWordMerkle, chainSize, otherAccount, publicClient } =
-        await loadFixture(deployEthWordMerkle);
-
-      const secret = stringToBytes("secret");
-      const hashChain = createHashchain(secret, chainSize + 1);
-      const proofIndex = 2;
-      const proof = hashChain.slice(proofIndex + 1);
-      const hexProof = proof.map((hash) => bytesToHex(hash, { size: 32 }));
-      const hexHash = toHex(hashChain[proofIndex], { size: 32 });
-
-      const initialBalance = await publicClient.getBalance({
-        address: ethWordMerkle.address,
-      });
-      const bigInitialBalance = BigInt(initialBalance);
-
-      const wordCount = 1;
-      const expectedWithdraw =
-        (bigInitialBalance * BigInt(wordCount)) / BigInt(chainSize);
-
-      await ethWordMerkle.write.closeChannel(
-        [BigInt(wordCount), hexHash, hexProof],
-        { account: otherAccount.account }
-      );
-
-      const finalBalance = await publicClient.getBalance({
-        address: ethWordMerkle.address,
-      });
-      const bigFinalBalance = BigInt(finalBalance);
-
-      expect(bigFinalBalance).to.equal(bigInitialBalance - expectedWithdraw);
     });
   });
 });

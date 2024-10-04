@@ -3,14 +3,8 @@ import {
   loadFixture,
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
-import {
-  parseEther,
-  stringToBytes,
-  toHex,
-} from "viem";
-import {
-  deployEthWordMerkle,
-} from "../utils/deployEthWordMerkle";
+import { parseEther, stringToBytes, toHex } from "viem";
+import { deployEthWordMerkle } from "../utils/deployEthWordMerkle";
 
 describe("EthWordMerkle Deployment", function () {
   it("Should deploy correctly with the correct recipient", async function () {
@@ -36,8 +30,6 @@ describe("EthWordMerkle Deployment", function () {
       deployEthWordMerkle
     );
 
-    
-    
     expect((await ethWordMerkle.read.root()).toUpperCase()).to.equal(
       merkleTree.getHexRoot().toUpperCase()
     );
