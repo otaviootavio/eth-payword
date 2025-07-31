@@ -9,10 +9,18 @@ describe("Close Channel", function () {
       const { ethWord, chainSize, otherAccount, publicClient, hashChain } =
         await loadFixture(deployEthWord);
 
-      await ethWord.write.closeChannel(
+      // Store tx response
+      const txResponse = await ethWord.write.closeChannel(
         [bytesToHex(hashChain[0], { size: 32 }), BigInt(chainSize)],
         { account: otherAccount.account }
       );
+
+      // Wait for tx receipt
+      const txReceipt = await publicClient.getTransactionReceipt({
+        hash: txResponse,
+      });
+
+      console.log("FULL_CLOSE_GAS:", txReceipt.gasUsed);
 
       expect(
         await publicClient.getBalance({ address: ethWord.address })

@@ -1,39 +1,65 @@
 #!/bin/bash
 
-# Array of desired hash amounts to test
-hash_amounts=(1 10 25 50 100 200 300 400 600 1000 5000 10000)
+# Create or clear the output file
+echo "chainSize,deployGas,closeChannelGas,merkleDeployGas,merkleCloseChannelGas,paymentChannelDeployGas,paymentChannelCloseGas,normalTransactionGas" > gas_data.csv
 
-# Function to run test and capture output
-function run_test_and_capture() {
-    local hash_amount=$1
+# Array of chain sizes to test
+CHAIN_SIZES=(2 4 8 16 32 64 128 256 512 1024 2048 4096)
 
-    echo "Running test for hash amount: ${hash_amount}"
+# Save original files
+cp test/utils/deployEthWord.ts test/utils/deployEthWord.ts.backup
+cp test/utils/deployEthWordMerkle.ts test/utils/deployEthWordMerkle.ts.backup
+cp test/utils/deployEthPaymentChannel.ts test/utils/deployEthPaymentChannel.ts.backup
+cp test/utils/deployNormalTransaction.ts test/utils/deployNormalTransaction.ts.backup
+
+for size in "${CHAIN_SIZES[@]}"; do
+    echo "Testing chain size: $size"
     
-    # Update the TypeScript file with the new hash amount
-    sed -i "s/const chainSize: number = [0-9_]\+;/const chainSize: number = ${hash_amount};/" test/utils/deployEthWord.ts
-
-    # Run the Hardhat test
-    npx hardhat test test/ethword/CloseChannel.test.ts
-
-    # Check if out.json is created successfully
-    if [ -f "./out.json" ]; then
-        mkdir -p ./output
-        mv out.json "./output/out_${hash_amount}.json"
-
-        # Extract gas amount using jq and save to a data file
-        local gas_amount=$(jq -r '.data.methods[] | select(.method == "closeChannel") | .executionGasAverage' "./output/out_${hash_amount}.json")
-        echo "${hash_amount},${gas_amount}" >> gas_data.csv
-    else
-        echo "Test did not generate out.json for hash amount ${hash_amount}."
-    fi
-}
-
-# Initialize data file
-echo "hash_amount,gas_usage" > gas_data.csv
-
-# Loop through all hash amounts and run tests
-for amount in "${hash_amounts[@]}"; do
-    run_test_and_capture $amount
+    # Replace chain size in the deployment files
+    sed -i "s/const chainSize: number = [0-9]\+/const chainSize: number = $size/" test/utils/deployEthWord.ts
+    sed -i "s/const wordCount = [0-9]\+/const wordCount = $size/" test/utils/deployEthWordMerkle.ts
+    sed -i "s/const depositAmount = parseEther(\"[0-9]\+\")/const depositAmount = parseEther(\"$size\")/" test/utils/deployEthPaymentChannel.ts
+    sed -i "s/const chainSize: number = [0-9]\+/const chainSize: number = $size/" test/utils/deployNormalTransaction.ts
+    
+    
+    # Run EthWord tests and capture output
+    RESULT_ETHWORD=$(npx hardhat test test/ethword/Channel.test.ts 2>&1)
+    
+    # Run EthWordMerkle tests and capture output
+    RESULT_MERKLE=$(npx hardhat test test/ethwordMerkle/Channel.test.ts 2>&1)
+    
+    # Run EthPaymentChannel tests and capture output
+    RESULT_PAYMENTCHANNEL=$(npx hardhat test test/ethpaymentchannel/Channel.test.ts 2>&1)
+    
+    # Run NormalTransaction tests and capture output
+    RESULT_NORMAL=$(npx hardhat test test/normalTransaction/Transaction.test.ts 2>&1)
+    
+    # Extract gas values for EthWord
+    DEPLOY_GAS=$(echo "$RESULT_ETHWORD" | grep "EthWord" | grep -oP "·\s+\K[0-9]+" | head -n1)
+    CLOSE_GAS=$(echo "$RESULT_ETHWORD" | grep "FULL_CLOSE_GAS:" | grep -oP "\d+" | head -n1)
+    
+    # Extract gas values for EthWordMerkle
+    MERKLE_DEPLOY_GAS=$(echo "$RESULT_MERKLE" | grep "EthWordMerkle" | grep -oP "·\s+\K[0-9]+" | head -n1)
+    MERKLE_CLOSE_GAS=$(echo "$RESULT_MERKLE" | grep "Withdraw" | grep -oP "used \K[0-9]+" | head -n1)
+    
+    # Extract gas values for EthPaymentChannel
+    PAYMENTCHANNEL_DEPLOY_GAS=$(echo "$RESULT_PAYMENTCHANNEL" | grep "EthPaymentChannel" | grep -oP "·\s+\K[0-9]+" | head -n1)
+    PAYMENTCHANNEL_CLOSE_GAS=$(echo "$RESULT_PAYMENTCHANNEL" | grep "Closed channel" | grep -oP "used \K[0-9]+" | head -n1)
+    
+    # Extract gas values for NormalTransaction
+    NORMAL_GAS=$(echo "$RESULT_NORMAL" | grep "NormalTransaction" | grep -oP "·\s+\K[0-9]+" | head -n1)
+    
+    # Write to CSV
+    echo "$size,$DEPLOY_GAS,$CLOSE_GAS,$MERKLE_DEPLOY_GAS,$MERKLE_CLOSE_GAS,$PAYMENTCHANNEL_DEPLOY_GAS,$PAYMENTCHANNEL_CLOSE_GAS,$NORMAL_GAS" >> gas_data.csv
+    
+    echo "Completed test for chain size: $size"
 done
 
-echo "All tests completed. Data written to gas_data.csv."
+# Restore original files
+mv test/utils/deployEthWord.ts.backup test/utils/deployEthWord.ts
+mv test/utils/deployEthWordMerkle.ts.backup test/utils/deployEthWordMerkle.ts
+mv test/utils/deployEthPaymentChannel.ts.backup test/utils/deployEthPaymentChannel.ts
+mv test/utils/deployNormalTransaction.ts.backup test/utils/deployNormalTransaction.ts
+
+echo -e "\nResults:"
+cat gas_data.csv

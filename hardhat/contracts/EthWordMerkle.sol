@@ -47,34 +47,6 @@ contract EthWordMerkle {
         require(success, "Transfer failed.");
     }
 
-    function simulateCloseChannel(
-        bytes32[] calldata proof,
-        bytes32 secret,
-        uint256 index
-    ) external view returns (bool, uint256) {
-        require(
-            msg.sender == channelRecipient,
-            "Only the channel recipient can simulate closing the channel."
-        );
-
-        // Compute hash of (secret + index)
-        bytes32 computedHash = keccak256(abi.encodePacked(secret, index));
-
-        // Check if this hash matches with the last item of the merkle tree
-        if (computedHash != proof[proof.length - 1]) {
-            return (false, 0);
-        }
-
-        // Validate the merkle proof
-        bool isValid = verify(proof, root, keccak256(abi.encodePacked(secret)));
-        if (!isValid) {
-            return (false, 0);
-        }
-
-        uint256 amountToWithdraw = calculateWithdrawAmount(index);
-        return (true, amountToWithdraw);
-    }
-
     function verify(
         bytes32[] calldata _proof,
         bytes32 _root,

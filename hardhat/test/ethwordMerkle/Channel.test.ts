@@ -1,5 +1,4 @@
 import {
-  time,
   loadFixture,
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { deployEthWordMerkle } from "../utils/deployEthWordMerkle";
