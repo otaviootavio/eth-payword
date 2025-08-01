@@ -26,7 +26,6 @@ export function createHashchain(
 
 export async function deployEthWordMerkle() {
   const [owner, otherAccount] = await hre.viem.getWalletClients();
-  const channelTimeout = BigInt(24 * 60 * 60);
   const wordCount = 8;
   const amountInEth = "8";
   const defaultRecipient: `0x${string}` = otherAccount.account.address;
@@ -54,7 +53,7 @@ export async function deployEthWordMerkle() {
 
   const ethWordMerkle = await hre.viem.deployContract(
     "EthWordMerkle",
-    [defaultRecipient, channelTimeout, root, BigInt(wordCount)],
+    [defaultRecipient, root, BigInt(wordCount)],
     { value: parseEther(amountInEth) }
   );
 

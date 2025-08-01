@@ -3,26 +3,30 @@ pragma solidity ^0.8.19;
 import "hardhat/console.sol";
 
 contract EthWordMerkle {
+    // Custom errors for gas optimization
+    error ZeroAddress();
+    error InvalidWordCount();
+    error OnlyRecipient();
+    error InvalidMerkleProof();
+    error TransferFailed();
+
     address payable public immutable channelSender;
     address payable public immutable channelRecipient;
     uint256 public immutable startDate;
-    uint256 public immutable channelTimeout;
     bytes32 public immutable root;
     uint256 public totalWordCount;
 
     constructor(
         address to,
-        uint256 _timeout,
         bytes32 _root,
         uint256 wordCount
     ) payable {
-        require(to != address(0), "Recipient address cannot be zero address.");
-        require(wordCount > 0, "Word count must be positive.");
+        if (to == address(0)) revert ZeroAddress();
+        if (wordCount == 0) revert InvalidWordCount();
 
         channelRecipient = payable(to);
         channelSender = payable(msg.sender);
         startDate = block.timestamp;
-        channelTimeout = _timeout;
         root = _root;
         totalWordCount = wordCount;
     }
@@ -32,19 +36,16 @@ contract EthWordMerkle {
         bytes32 secret,
         uint256 index
     ) external {
-        require(
-            msg.sender == channelRecipient,
-            "Only the channel recipient can close the channel."
-        );
+        if (msg.sender != channelRecipient) revert OnlyRecipient();
         // Validate the merkle proof
         bool isValid = verify(proof, root, secret);
-        require(isValid, "Invalid Merkle proof.");
+        if (!isValid) revert InvalidMerkleProof();
 
         // If we've reached here, the data is valid. Proceed with channel closure
         uint256 amountToWithdraw = calculateWithdrawAmount(index + 1);
 
         (bool success, ) = channelRecipient.call{value: amountToWithdraw}("");
-        require(success, "Transfer failed.");
+        if (!success) revert TransferFailed();
     }
 
     function verify(
