@@ -4,6 +4,7 @@ import {
 import { expect } from "chai";
 import { parseEther, keccak256, encodePacked } from "viem";
 import { deployEthPayChanHub } from "../utils/deployEthPayChanHub";
+import hre from "hardhat";
 
 describe("EthPayChanHub Event Tests", function () {
   describe("Channel events", function () {
@@ -12,11 +13,13 @@ describe("EthPayChanHub Event Tests", function () {
         ethPayChanHub,
         otherAccount,
         owner,
-        publicClient,
+        // publicClient,
       } = await loadFixture(deployEthPayChanHub);
 
       const channelDeposit = parseEther("0.5");
 
+      const publicClient = await hre.viem.getPublicClient();
+      
       // Create channel and get transaction receipt
       const createChannelTx = await ethPayChanHub.write.createChannel(
         [otherAccount.account.address],

@@ -4,7 +4,7 @@ import { parseEther, stringToBytes } from "viem";
 
 const hashM = 20;
 const wordCount: number = 1000;
-const wordsToConsume: bigint = 500n;
+const wordsToConsume: bigint = 800n;
 const secret: Uint8Array = stringToBytes("segredo", { size: 32 });
 const amount: bigint = parseEther("1");
 

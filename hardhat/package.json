@@ -22,6 +22,13 @@
     "@nomicfoundation/hardhat-ignition": "0.15.5",
     "@nomicfoundation/hardhat-toolbox-viem": "3.0.0",
     "@openzeppelin/contracts": "5.0.2",
+    "hardhat-gas-reporter": "^2.3.0",
     "merkletreejs": "0.4.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "keccak",
+      "secp256k1"
+    ]
   }
 }

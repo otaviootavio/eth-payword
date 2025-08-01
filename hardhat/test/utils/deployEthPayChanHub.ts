@@ -5,7 +5,7 @@ export async function deployEthPayChanHub() {
   const [owner, otherAccount] = await hre.viem.getWalletClients();
 
   const ethPayChanHub = await hre.viem.deployContract("EthPayChanHub");
-
+  
   const publicClient = await hre.viem.getPublicClient();
 
   return {

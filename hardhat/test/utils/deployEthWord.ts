@@ -1,8 +1,8 @@
 import hre from "hardhat";
 import { parseEther, stringToBytes, keccak256, bytesToHex } from "viem";
 
-export const hashM = 1;
-const chainSize: number = 50;
+export const hashM = 800;
+const chainSize: number = 10000;
 const secret: Uint8Array = stringToBytes("segredo");
 const ammount: bigint = parseEther("1");
 
