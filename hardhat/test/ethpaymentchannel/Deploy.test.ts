@@ -12,7 +12,7 @@ describe("EthPaymentChannel Deployment", function () {
     );
 
     expect(
-      (await ethPaymentChannel.read.recipient() as string).toUpperCase()
+      (await ethPaymentChannel.read.r() as string).toUpperCase()
     ).to.equal(otherAccount.account.address.toUpperCase());
   });
 
@@ -22,7 +22,7 @@ describe("EthPaymentChannel Deployment", function () {
     );
 
     expect(
-      (await ethPaymentChannel.read.sender() as string).toUpperCase()
+      (await ethPaymentChannel.read.s() as string).toUpperCase()
     ).to.equal(owner.account.address.toUpperCase());
   });
 

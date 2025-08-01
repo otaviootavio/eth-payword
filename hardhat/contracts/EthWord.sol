@@ -2,64 +2,66 @@
 pragma solidity ^0.8.24;
 
 contract EthWord {
-    address payable public channelRecipient;
-    uint public totalWordCount;
+    // Custom errors for gas optimization
+    error ZeroAddress();
+    error InvalidWordCount();
+    error ZeroTip();
+    error Unauthorized();
+    error WordCountExceedsAvailable();
+    error InvalidWordOrCount();
+    error TransferFailed();
+
+    address payable public immutable channelRecipient;
     bytes32 public channelTip;
+    uint public totalWordCount;
 
     constructor(address to, uint wordCount, bytes32 tip) payable {
-        require(to != address(0), "Recipient cannot be the zero address");
-        require(wordCount > 0, "Word count must be positive");
-        require(tip != 0, "Initial tip cannot be zero");
+        if (to == address(0)) revert ZeroAddress();
+        if (wordCount == 0) revert InvalidWordCount();
+        if (tip == 0) revert ZeroTip();
 
         channelRecipient = payable(to);
         totalWordCount = wordCount;
         channelTip = tip;
     }
 
-    function closeChannel(bytes32 _word, uint _wordCount) public {
-        require(
-            msg.sender == channelRecipient,
-            "Only the recipient can close the channel"
-        );
-        require(
-            _wordCount <= totalWordCount,
-            "Word count exceeds available words"
-        );
+    function closeChannel(bytes32 _word, uint _wordCount) external {
+        if (msg.sender != channelRecipient) revert Unauthorized();
+        if (_wordCount > totalWordCount) revert WordCountExceedsAvailable();
+        
         bool isValid = validateChannelClosure(_word, _wordCount);
-        require(isValid, "Word or WordCount not valid!");
+        if (!isValid) revert InvalidWordOrCount();
 
-        uint amountToWithdraw = calculateWithdrawAmount(_wordCount);
+        // Inline calculateWithdrawAmount logic
+        uint remainingWords = totalWordCount - _wordCount;
+        uint amountToWithdraw;
+        if (remainingWords == 0) {
+            amountToWithdraw = address(this).balance;
+        } else {
+            uint initialWordPrice = address(this).balance / totalWordCount;
+            amountToWithdraw = initialWordPrice * _wordCount;
+        }
 
         (bool sent, ) = channelRecipient.call{value: amountToWithdraw}("");
-        require(sent, "Failed to send Ether");
+        if (!sent) revert TransferFailed();
 
         channelTip = _word;
-        totalWordCount = totalWordCount - _wordCount;
+        unchecked {
+            totalWordCount = totalWordCount - _wordCount;
+        }
     }
 
     function validateChannelClosure(
         bytes32 _word,
         uint _wordCount
     ) private view returns (bool) {
-        if (_wordCount == 0) {
-            return false;
-        }
         bytes32 wordScratch = keccak256(abi.encodePacked(_word));
 
-        for (uint i = 1; i < _wordCount; i++) {
-            wordScratch = keccak256(abi.encodePacked(wordScratch));
+        unchecked {
+            for (uint i = 1; i < _wordCount; i++) {
+                wordScratch = keccak256(abi.encodePacked(wordScratch));
+            }
         }
         return wordScratch == channelTip;
-    }
-
-    function calculateWithdrawAmount(
-        uint _wordCount
-    ) private view returns (uint) {
-        uint remainingWords = totalWordCount - _wordCount;
-        if (remainingWords == 0) {
-            return address(this).balance;
-        }
-        uint initialWordPrice = address(this).balance / totalWordCount;
-        return initialWordPrice * _wordCount;
     }
 }

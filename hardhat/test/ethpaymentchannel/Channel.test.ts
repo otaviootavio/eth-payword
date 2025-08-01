@@ -26,15 +26,8 @@ describe("Close Channel", function () {
         )
       );
 
-      // Create the Ethereum signed message hash
-      const ethSignedMessageHash = keccak256(
-        encodePacked(
-          ["string", "bytes32"],
-          ["\x19Ethereum Signed Message:\n32", messageHash]
-        )
-      );
-
-      // Sign the message with the owner's private key
+      // Sign the message hash with the owner's private key
+      // The signMessage function will automatically add the Ethereum signed message prefix
       const signature = await owner.signMessage({
         message: { raw: messageHash },
       });
