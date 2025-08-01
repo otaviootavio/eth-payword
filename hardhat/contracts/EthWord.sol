@@ -28,7 +28,7 @@ contract EthWord {
     function closeChannel(bytes32 _word, uint _wordCount) external {
         if (msg.sender != channelRecipient) revert Unauthorized();
         if (_wordCount > totalWordCount) revert WordCountExceedsAvailable();
-        
+
         bool isValid = validateChannelClosure(_word, _wordCount);
         if (!isValid) revert InvalidWordOrCount();
 
@@ -43,12 +43,11 @@ contract EthWord {
         }
 
         (bool sent, ) = channelRecipient.call{value: amountToWithdraw}("");
+
         if (!sent) revert TransferFailed();
 
         channelTip = _word;
-        unchecked {
-            totalWordCount = totalWordCount - _wordCount;
-        }
+        totalWordCount -= _wordCount;
     }
 
     function validateChannelClosure(
@@ -57,11 +56,10 @@ contract EthWord {
     ) private view returns (bool) {
         bytes32 wordScratch = keccak256(abi.encodePacked(_word));
 
-        unchecked {
-            for (uint i = 1; i < _wordCount; i++) {
-                wordScratch = keccak256(abi.encodePacked(wordScratch));
-            }
+        for (uint i = 1; i < _wordCount; i++) {
+            wordScratch = keccak256(abi.encodePacked(wordScratch));
         }
+
         return wordScratch == channelTip;
     }
 }
